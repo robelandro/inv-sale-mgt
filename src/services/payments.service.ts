@@ -275,7 +275,7 @@ export async function getDebts(params: {
       SUM(s.balance_due)::numeric(14,2) as total_owed,
       MIN(s.created_at) as oldest_unpaid_date,
       MIN(s.due_date) as earliest_due_date,
-      BOOL_OR(s.due_date IS NOT NULL AND s.due_date < ${now.toISOString()} AND s.balance_due > 0) as is_overdue,
+      BOOL_OR(s.due_date IS NOT NULL AND s.due_date < NOW() AND s.balance_due > 0) as is_overdue,
       COUNT(s.id)::int as unpaid_sales_count
     FROM customers c
     JOIN sales s ON s.customer_id = c.id
@@ -290,7 +290,7 @@ export async function getDebts(params: {
   baseQuery = sql`${baseQuery} GROUP BY c.id, c.name, c.phone, c.email, c.credit_limit`;
 
   if (params.overdueOnly) {
-    baseQuery = sql`${baseQuery} HAVING BOOL_OR(s.due_date IS NOT NULL AND s.due_date < ${now.toISOString()} AND s.balance_due > 0) = TRUE`;
+    baseQuery = sql`${baseQuery} HAVING BOOL_OR(s.due_date IS NOT NULL AND s.due_date < NOW() AND s.balance_due > 0) = TRUE`;
   }
 
   // Count total matching

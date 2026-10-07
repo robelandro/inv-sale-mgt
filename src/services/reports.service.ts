@@ -247,8 +247,6 @@ export async function getStockValuationReport() {
 }
 
 export async function getDebtAgingReport() {
-  const now = new Date();
-
   const rows = await db.execute(sql`
     SELECT 
       c.id,
@@ -256,10 +254,10 @@ export async function getDebtAgingReport() {
       c.phone,
       c.email,
       COALESCE(SUM(s.balance_due), 0.00)::numeric(14,2) as total_owed,
-      COALESCE(SUM(CASE WHEN ${now} - s.created_at <= interval '30 days' THEN s.balance_due ELSE 0 END), 0.00)::numeric(14,2) as age_0_30,
-      COALESCE(SUM(CASE WHEN ${now} - s.created_at > interval '30 days' AND ${now} - s.created_at <= interval '60 days' THEN s.balance_due ELSE 0 END), 0.00)::numeric(14,2) as age_31_60,
-      COALESCE(SUM(CASE WHEN ${now} - s.created_at > interval '60 days' AND ${now} - s.created_at <= interval '90 days' THEN s.balance_due ELSE 0 END), 0.00)::numeric(14,2) as age_61_90,
-      COALESCE(SUM(CASE WHEN ${now} - s.created_at > interval '90 days' THEN s.balance_due ELSE 0 END), 0.00)::numeric(14,2) as age_90_plus
+      COALESCE(SUM(CASE WHEN NOW() - s.created_at <= interval '30 days' THEN s.balance_due ELSE 0 END), 0.00)::numeric(14,2) as age_0_30,
+      COALESCE(SUM(CASE WHEN NOW() - s.created_at > interval '30 days' AND NOW() - s.created_at <= interval '60 days' THEN s.balance_due ELSE 0 END), 0.00)::numeric(14,2) as age_31_60,
+      COALESCE(SUM(CASE WHEN NOW() - s.created_at > interval '60 days' AND NOW() - s.created_at <= interval '90 days' THEN s.balance_due ELSE 0 END), 0.00)::numeric(14,2) as age_61_90,
+      COALESCE(SUM(CASE WHEN NOW() - s.created_at > interval '90 days' THEN s.balance_due ELSE 0 END), 0.00)::numeric(14,2) as age_90_plus
     FROM customers c
     JOIN sales s ON s.customer_id = c.id
     WHERE s.status != 'voided' AND s.balance_due > 0
