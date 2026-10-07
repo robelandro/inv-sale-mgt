@@ -4,6 +4,8 @@ import { isCompanyOnboarded, getCompany } from "@/services/company.service";
 import { Sidebar } from "@/components/layout/sidebar";
 import { Topbar } from "@/components/layout/topbar";
 
+export const dynamic = "force-dynamic";
+
 export default async function AppLayout({
   children,
 }: {

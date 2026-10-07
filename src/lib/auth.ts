@@ -41,7 +41,7 @@ export async function createSession(userId: string): Promise<string> {
     expiresAt,
   });
 
-  const cookieStore = cookies();
+  const cookieStore = await cookies();
   cookieStore.set(SESSION_COOKIE_NAME, token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
@@ -54,7 +54,7 @@ export async function createSession(userId: string): Promise<string> {
 }
 
 export async function destroySession(): Promise<void> {
-  const cookieStore = cookies();
+  const cookieStore = await cookies();
   const token = cookieStore.get(SESSION_COOKIE_NAME)?.value;
 
   if (token) {
@@ -69,7 +69,7 @@ export async function destroySession(): Promise<void> {
 }
 
 export async function getCurrentUser(): Promise<AuthUser | null> {
-  const cookieStore = cookies();
+  const cookieStore = await cookies();
   const token = cookieStore.get(SESSION_COOKIE_NAME)?.value;
   if (!token) return null;
 

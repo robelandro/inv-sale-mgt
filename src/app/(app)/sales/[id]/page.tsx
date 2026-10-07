@@ -8,11 +8,12 @@ import { SaleDetailView } from "./sale-detail-view";
 export default async function SaleDetailPage({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
+  const { id } = await params;
   const user = await requirePermission(PERMISSIONS.SALES_VIEW);
   const comp = await getCompany();
-  const sale = await getSaleById(params.id);
+  const sale = await getSaleById(id);
 
   if (!sale) {
     notFound();

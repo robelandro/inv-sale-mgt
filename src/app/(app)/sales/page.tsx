@@ -12,17 +12,18 @@ import { Plus, Download, Search, Filter } from "lucide-react";
 export default async function SalesPage({
   searchParams,
 }: {
-  searchParams: { q?: string; status?: string; payment?: string; page?: string };
+  searchParams: Promise<{ q?: string; status?: string; payment?: string; page?: string }>;
 }) {
+  const sp = await searchParams;
   const user = await requirePermission(PERMISSIONS.SALES_VIEW);
   const comp = await getCompany();
-  const page = parseInt(searchParams.page || "1") || 1;
+  const page = parseInt(sp.page || "1") || 1;
   const isCashierOnly = user.roleKey === "cashier";
 
   const { items, total, totalPages } = await getSales({
-    search: searchParams.q,
-    status: (searchParams.status as any) || "all",
-    paymentStatus: (searchParams.payment as any) || "all",
+    search: sp.q,
+    status: (sp.status as any) || "all",
+    paymentStatus: (sp.payment as any) || "all",
     userIdOnly: isCashierOnly ? user.id : undefined,
     page,
     pageSize: 20,
@@ -65,7 +66,7 @@ export default async function SalesPage({
           <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
             name="q"
-            defaultValue={searchParams.q || ""}
+            defaultValue={sp.q || ""}
             placeholder="Search by invoice number or customer name..."
             className="pl-9"
           />
@@ -74,7 +75,7 @@ export default async function SalesPage({
         <div className="flex gap-2">
           <select
             name="payment"
-            defaultValue={searchParams.payment || "all"}
+            defaultValue={sp.payment || "all"}
             className="h-9 rounded-md border border-input bg-background px-3 py-1 text-xs"
           >
             <option value="all">All Payment Statuses</option>
@@ -85,7 +86,7 @@ export default async function SalesPage({
 
           <select
             name="status"
-            defaultValue={searchParams.status || "all"}
+            defaultValue={sp.status || "all"}
             className="h-9 rounded-md border border-input bg-background px-3 py-1 text-xs"
           >
             <option value="all">All Invoices</option>

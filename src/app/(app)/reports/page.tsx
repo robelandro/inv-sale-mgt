@@ -11,12 +11,13 @@ import { ReportsView } from "./reports-view";
 export default async function ReportsPage({
   searchParams,
 }: {
-  searchParams: { from?: string; to?: string };
+  searchParams: Promise<{ from?: string; to?: string }>;
 }) {
+  const sp = await searchParams;
   await requirePermission(PERMISSIONS.REPORTS_VIEW);
   const comp = await getCompany();
 
-  const profitData = await getProfitReport(searchParams.from, searchParams.to);
+  const profitData = await getProfitReport(sp.from, sp.to);
   const valuationData = await getStockValuationReport();
   const agingData = await getDebtAgingReport();
 

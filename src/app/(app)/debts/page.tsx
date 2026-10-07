@@ -7,16 +7,17 @@ import { DebtsView } from "./debts-view";
 export default async function DebtsPage({
   searchParams,
 }: {
-  searchParams: { q?: string; overdue?: string; page?: string };
+  searchParams: Promise<{ q?: string; overdue?: string; page?: string }>;
 }) {
+  const sp = await searchParams;
   const user = await requirePermission(PERMISSIONS.DEBTS_VIEW);
   const comp = await getCompany();
-  const page = parseInt(searchParams.page || "1") || 1;
-  const overdueOnly = searchParams.overdue === "true";
+  const page = parseInt(sp.page || "1") || 1;
+  const overdueOnly = sp.overdue === "true";
   const canRecordPayment = can(user, PERMISSIONS.PAYMENTS_RECORD);
 
   const { items: debts, total, totalPages } = await getDebts({
-    search: searchParams.q,
+    search: sp.q,
     overdueOnly,
     page,
     pageSize: 20,
@@ -31,7 +32,7 @@ export default async function DebtsPage({
         currentPage={page}
         currency={comp?.currency || "USD"}
         canRecordPayment={canRecordPayment}
-        searchQuery={searchParams.q || ""}
+        searchQuery={sp.q || ""}
         overdueOnly={overdueOnly}
       />
     </div>

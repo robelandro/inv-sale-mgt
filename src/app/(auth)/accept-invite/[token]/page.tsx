@@ -8,9 +8,10 @@ import { AcceptInviteForm } from "./accept-invite-form";
 export default async function AcceptInvitePage({
   params,
 }: {
-  params: { token: string };
+  params: Promise<{ token: string }>;
 }) {
-  const tokenHash = crypto.createHash("sha256").update(params.token).digest("hex");
+  const { token } = await params;
+  const tokenHash = crypto.createHash("sha256").update(token).digest("hex");
   const now = new Date();
 
   const inviteRow = await db.query.invites.findFirst({
@@ -52,7 +53,7 @@ export default async function AcceptInvitePage({
           </p>
         </div>
 
-        <AcceptInviteForm token={params.token} email={user.email} />
+        <AcceptInviteForm token={token} email={user.email} />
       </div>
     </div>
   );

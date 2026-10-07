@@ -8,13 +8,14 @@ import { CustomerDetailView } from "./customer-detail-view";
 export default async function CustomerDetailPage({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
+  const { id } = await params;
   const user = await requirePermission(PERMISSIONS.CUSTOMERS_VIEW);
   const comp = await getCompany();
 
   try {
-    const data = await getCustomerStatement(params.id);
+    const data = await getCustomerStatement(id);
     const canRecordPayment = can(user, PERMISSIONS.PAYMENTS_RECORD);
     const canManage = can(user, PERMISSIONS.CUSTOMERS_MANAGE);
 

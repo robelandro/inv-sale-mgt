@@ -2,6 +2,8 @@ import { isCompanyOnboarded } from "@/services/company.service";
 import { redirect } from "next/navigation";
 import { OnboardingWizard } from "./onboarding-wizard";
 
+export const dynamic = "force-dynamic";
+
 export default async function OnboardingPage() {
   const onboarded = await isCompanyOnboarded();
   if (onboarded) {

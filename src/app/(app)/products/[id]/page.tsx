@@ -10,21 +10,22 @@ import { ProductDetailView } from "./product-detail-view";
 export default async function ProductDetailPage({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
+  const { id } = await params;
   const user = await requirePermission(PERMISSIONS.PRODUCTS_VIEW);
   const comp = await getCompany();
   const canViewCost = can(user, PERMISSIONS.PRODUCTS_VIEW_COST);
   const canManage = can(user, PERMISSIONS.PRODUCTS_MANAGE);
   const canAdjustStock = can(user, PERMISSIONS.STOCK_ADJUST);
 
-  const product = await getProductById(params.id, canViewCost);
+  const product = await getProductById(id, canViewCost);
   if (!product) {
     notFound();
   }
 
   const { items: movements } = await getStockMovements({
-    productId: params.id,
+    productId: id,
     pageSize: 50,
   });
 

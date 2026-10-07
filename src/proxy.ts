@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // Skip static assets, uploads, and Next internal files
@@ -18,7 +18,10 @@ export function middleware(request: NextRequest) {
   const sessionToken = request.cookies.get("inv_session")?.value;
 
   // If user has no session and tries to access app routes (not login or onboarding)
-  const isAuthRoute = pathname.startsWith("/login") || pathname.startsWith("/onboarding") || pathname.startsWith("/accept-invite");
+  const isAuthRoute =
+    pathname.startsWith("/login") ||
+    pathname.startsWith("/onboarding") ||
+    pathname.startsWith("/accept-invite");
 
   if (!sessionToken && !isAuthRoute) {
     const url = request.nextUrl.clone();
@@ -35,6 +38,9 @@ export function middleware(request: NextRequest) {
 
   return NextResponse.next();
 }
+
+export const middleware = proxy;
+export default proxy;
 
 export const config = {
   matcher: ["/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)"],

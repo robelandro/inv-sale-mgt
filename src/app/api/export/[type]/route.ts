@@ -22,14 +22,14 @@ function arrayToCsv(headers: string[], rows: (string | number | null | undefined
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { type: string } }
+  { params }: { params: Promise<{ type: string }> }
 ) {
   const user = await getCurrentUser();
   if (!user) {
     return new NextResponse("Unauthorized", { status: 401 });
   }
 
-  const { type } = params;
+  const { type } = await params;
 
   if (type === "products") {
     if (!can(user, PERMISSIONS.PRODUCTS_VIEW)) {
