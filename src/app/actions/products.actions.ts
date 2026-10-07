@@ -24,6 +24,7 @@ export async function createProductAction(values: any) {
         sku: parsed.data.sku || undefined,
         barcode: parsed.data.barcode || undefined,
         categoryId: parsed.data.categoryId || undefined,
+        newCategoryName: parsed.data.newCategoryName || undefined,
         unitId: parsed.data.unitId || undefined,
         costPrice: parsed.data.costPrice,
         sellingPrice: parsed.data.sellingPrice,

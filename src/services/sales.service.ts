@@ -22,7 +22,9 @@ export interface CreateSaleItemInput {
 }
 
 export interface CreateSaleInput {
-  customerId: string;
+  customerId?: string | null;
+  customerName?: string | null;
+  customerPhone?: string | null;
   items: CreateSaleItemInput[];
   discountTotal?: number;
   amountPaid?: number;
@@ -49,14 +51,14 @@ export async function createSale(input: CreateSaleInput) {
     const taxRate = comp ? Number(comp.taxRate) : 0;
     const invoicePrefix = comp?.invoicePrefix || "INV";
 
-    // 2. Fetch Customer
-    const custRows = await tx.select().from(customers).where(eq(customers.id, input.customerId)).limit(1);
-    const customer = custRows[0];
-    if (!customer) {
-      throw new Error("Customer not found.");
-    }
-    if (!customer.isActive) {
-      throw new Error("Cannot make a sale to an inactive customer.");
+    // 2. Fetch Customer if specified
+    let customer: any = null;
+    if (input.customerId) {
+      const custRows = await tx.select().from(customers).where(eq(customers.id, input.customerId)).limit(1);
+      customer = custRows[0] || null;
+      if (customer && !customer.isActive) {
+        throw new Error("Cannot make a sale to an inactive customer.");
+      }
     }
 
     // 3. Lock products FOR UPDATE to prevent race conditions & overselling
@@ -182,11 +184,54 @@ export async function createSale(input: CreateSaleInput) {
       paymentStatus = "unpaid";
     }
 
+    // Resolve Customer:
+    // If a new or explicit customer name was provided, link to existing or auto-create customer
+    if (input.customerName && input.customerName.trim().length > 0) {
+      const cleanName = input.customerName.trim();
+      const cleanPhone = input.customerPhone?.trim() || null;
+      let existingCust: any = null;
+
+      if (cleanPhone) {
+        const found = await tx.select().from(customers).where(eq(customers.phone, cleanPhone)).limit(1);
+        if (found[0]) existingCust = found[0];
+      }
+      if (!existingCust) {
+        const found = await tx.select().from(customers).where(eq(customers.name, cleanName)).limit(1);
+        if (found[0] && !found[0].isWalkIn) existingCust = found[0];
+      }
+
+      if (existingCust) {
+        customer = existingCust;
+      } else {
+        const [newCust] = await tx.insert(customers).values({
+          name: cleanName,
+          phone: cleanPhone,
+          isWalkIn: false,
+          isActive: true,
+        }).returning();
+        customer = newCust;
+      }
+    }
+
+    // Default to Walk-In Customer if no customer specified or resolved
+    if (!customer) {
+      const walkInRows = await tx.select().from(customers).where(eq(customers.isWalkIn, true)).limit(1);
+      customer = walkInRows[0];
+      if (!customer) {
+        const [w] = await tx.insert(customers).values({
+          name: "Walk-in Customer",
+          isWalkIn: true,
+          isActive: true,
+        }).returning();
+        customer = w;
+      }
+    }
+
     // Rule 7: If balance_due > 0: customer must not be Walk-in, credit sales must be enabled, credit limit check
     if (balanceDueCents > 0) {
       if (customer.isWalkIn) {
         throw new Error(
-          "Walk-in customers cannot make partial or credit purchases. Please select or register a customer account."
+          "Customer name is required for credit or partial debt sales. Please provide customer name."
         );
       }
       if (!allowCredit) {
@@ -229,7 +274,7 @@ export async function createSale(input: CreateSaleInput) {
       .insert(sales)
       .values({
         invoiceNo,
-        customerId: input.customerId,
+        customerId: customer.id,
         status: "completed",
         subtotal: fromCents(subtotalCents),
         discountTotal: fromCents(totalDiscountCents),
@@ -288,7 +333,7 @@ export async function createSale(input: CreateSaleInput) {
       const [pmt] = await tx
         .insert(payments)
         .values({
-          customerId: input.customerId,
+          customerId: customer.id,
           method: input.paymentMethod || "cash",
           amount: fromCents(amountPaidCents),
           paidAt: new Date(),

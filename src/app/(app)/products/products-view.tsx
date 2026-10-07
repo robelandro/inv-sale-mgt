@@ -59,6 +59,15 @@ export function ProductsView({
 }: ProductsViewProps) {
   const router = useRouter();
 
+  const defaultCategory =
+    categories.find((c) => c.name.toLowerCase() === "general") || categories[0];
+  const defaultUnit =
+    units.find(
+      (u) =>
+        u.name.toLowerCase() === "pieces" ||
+        u.shortName.toLowerCase() === "pcs"
+    ) || units[0];
+
   // Dialog State
   const [createDialogOpen, setCreateDialogOpen] = React.useState(false);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
@@ -67,8 +76,10 @@ export function ProductsView({
   const [name, setName] = React.useState("");
   const [sku, setSku] = React.useState("");
   const [barcode, setBarcode] = React.useState("");
-  const [categoryId, setCategoryId] = React.useState("");
-  const [unitId, setUnitId] = React.useState("");
+  const [categoryId, setCategoryId] = React.useState(defaultCategory?.id || "");
+  const [newCategoryName, setNewCategoryName] = React.useState("");
+  const [isCustomCategory, setIsCustomCategory] = React.useState(false);
+  const [unitId, setUnitId] = React.useState(defaultUnit?.id || "");
   const [costPrice, setCostPrice] = React.useState("0.00");
   const [sellingPrice, setSellingPrice] = React.useState("0.00");
   const [initialStock, setInitialStock] = React.useState("0");
@@ -97,13 +108,19 @@ export function ProductsView({
       return;
     }
 
+    if (isCustomCategory && !newCategoryName.trim()) {
+      toast.error("Please enter a category name");
+      return;
+    }
+
     setIsSubmitting(true);
     try {
       const res = await createProductAction({
         name,
         sku: sku || undefined,
         barcode: barcode || undefined,
-        categoryId: categoryId || undefined,
+        categoryId: isCustomCategory ? undefined : categoryId || undefined,
+        newCategoryName: isCustomCategory ? newCategoryName.trim() : undefined,
         unitId: unitId || undefined,
         costPrice: parseFloat(costPrice) || 0,
         sellingPrice: parseFloat(sellingPrice) || 0,
@@ -123,6 +140,16 @@ export function ProductsView({
       // Reset form
       setName("");
       setSku("");
+      setBarcode("");
+      setCategoryId(defaultCategory?.id || "");
+      setNewCategoryName("");
+      setIsCustomCategory(false);
+      setUnitId(defaultUnit?.id || "");
+      setCostPrice("0.00");
+      setSellingPrice("0.00");
+      setInitialStock("0");
+      setLowStockThreshold("5");
+      setDescription("");
       setBarcode("");
       setCostPrice("0.00");
       setSellingPrice("0.00");
@@ -394,20 +421,51 @@ export function ProductsView({
 
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <Label htmlFor="prodCat">Category</Label>
-                <select
-                  id="prodCat"
-                  value={categoryId}
-                  onChange={(e) => setCategoryId(e.target.value)}
-                  className="w-full h-9 rounded-md border border-input bg-background px-3 py-1 text-sm"
-                >
-                  <option value="">Select Category...</option>
-                  {categories.map((c) => (
-                    <option key={c.id} value={c.id}>
-                      {c.name}
-                    </option>
-                  ))}
-                </select>
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="prodCat">Category</Label>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsCustomCategory(!isCustomCategory);
+                      if (!isCustomCategory) setNewCategoryName("");
+                    }}
+                    className="text-xs text-primary hover:underline font-medium"
+                  >
+                    {isCustomCategory ? "Choose existing" : "+ Other category"}
+                  </button>
+                </div>
+                {isCustomCategory ? (
+                  <Input
+                    id="newCat"
+                    placeholder="Enter new category name..."
+                    value={newCategoryName}
+                    onChange={(e) => setNewCategoryName(e.target.value)}
+                    autoFocus
+                    required
+                  />
+                ) : (
+                  <select
+                    id="prodCat"
+                    value={categoryId}
+                    onChange={(e) => {
+                      if (e.target.value === "__custom__") {
+                        setIsCustomCategory(true);
+                        setNewCategoryName("");
+                      } else {
+                        setCategoryId(e.target.value);
+                      }
+                    }}
+                    className="w-full h-9 rounded-md border border-input bg-background px-3 py-1 text-sm"
+                  >
+                    <option value="">Select Category...</option>
+                    {categories.map((c) => (
+                      <option key={c.id} value={c.id}>
+                        {c.name}
+                      </option>
+                    ))}
+                    <option value="__custom__">+ Other / Enter New Category...</option>
+                  </select>
+                )}
               </div>
 
               <div className="space-y-1.5">

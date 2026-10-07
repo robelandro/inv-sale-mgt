@@ -68,7 +68,9 @@ export function PosTerminal({
   >("cash");
   const [partialAmountPaid, setPartialAmountPaid] = React.useState<string>("");
   const [wholesaleDiscount, setWholesaleDiscount] = React.useState<number>(0);
-  const [dueDate, setDueDate] = React.useState<string>("");
+  const [dueDate, setDueDate] = React.useState<string>( "");
+  const [debtCustomerName, setDebtCustomerName] = React.useState<string>("");
+  const [debtCustomerPhone, setDebtCustomerPhone] = React.useState<string>("");
   const [notes, setNotes] = React.useState<string>("");
   const [isSubmitting, setIsSubmitting] = React.useState(false);
 
@@ -176,6 +178,9 @@ export function PosTerminal({
     setCart([]);
     setWholesaleDiscount(0);
     setPartialAmountPaid("");
+    setDebtCustomerName("");
+    setDebtCustomerPhone("");
+    setDueDate("");
     setNotes("");
   };
 
@@ -214,20 +219,23 @@ export function PosTerminal({
       return;
     }
 
-    if (balanceDueCents > 0 && isWalkIn) {
-      toast.error("Walk-in customers cannot purchase on credit or partial payment. Please select a registered customer.");
-      return;
-    }
-
-    if (balanceDueCents > 0 && !allowCredit) {
-      toast.error("Credit sales are disabled in company settings.");
-      return;
+    if (balanceDueCents > 0) {
+      if (!allowCredit) {
+        toast.error("Credit sales are disabled in company settings.");
+        return;
+      }
+      if (isWalkIn && !debtCustomerName.trim()) {
+        toast.error("Please enter the customer name for credit/debt sales.");
+        return;
+      }
     }
 
     setIsSubmitting(true);
     try {
       const payload = {
-        customerId: selectedCustomerId,
+        customerId: isWalkIn && debtCustomerName.trim() ? undefined : selectedCustomerId,
+        customerName: isWalkIn && debtCustomerName.trim() ? debtCustomerName.trim() : undefined,
+        customerPhone: isWalkIn && debtCustomerPhone.trim() ? debtCustomerPhone.trim() : undefined,
         items: cart.map((i) => ({
           productId: i.productId,
           qty: i.qty,
@@ -510,7 +518,7 @@ export function PosTerminal({
                     </button>
                     <button
                       type="button"
-                      disabled={isWalkIn || !allowCredit}
+                      disabled={!allowCredit}
                       onClick={() => setPaymentType("partial")}
                       className={`py-1.5 text-xs font-medium rounded-lg border transition-all disabled:opacity-40 disabled:cursor-not-allowed ${
                         paymentType === "partial"
@@ -522,7 +530,7 @@ export function PosTerminal({
                     </button>
                     <button
                       type="button"
-                      disabled={isWalkIn || !allowCredit}
+                      disabled={!allowCredit}
                       onClick={() => setPaymentType("credit")}
                       className={`py-1.5 text-xs font-medium rounded-lg border transition-all disabled:opacity-40 disabled:cursor-not-allowed ${
                         paymentType === "credit"
@@ -533,12 +541,39 @@ export function PosTerminal({
                       Full Credit
                     </button>
                   </div>
-                  {isWalkIn && (
-                    <p className="text-[11px] text-muted-foreground">
-                      * Walk-in customer sales must be paid in full
-                    </p>
-                  )}
                 </div>
+
+                {/* Customer Details for Credit/Debt if Walk-in */}
+                {paymentType !== "full" && isWalkIn && (
+                  <div className="space-y-2 p-2.5 bg-blue-50/70 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-900 rounded-lg">
+                    <div className="flex items-center justify-between">
+                      <Label className="text-xs font-semibold text-blue-900 dark:text-blue-200">
+                        Customer Info for Debt Record
+                      </Label>
+                      <span className="text-[10px] text-blue-700 dark:text-blue-300 font-medium">
+                        * Required
+                      </span>
+                    </div>
+                    <div className="space-y-1.5">
+                      <Input
+                        id="debtCustName"
+                        placeholder="Customer Name *"
+                        value={debtCustomerName}
+                        onChange={(e) => setDebtCustomerName(e.target.value)}
+                        className="h-8 text-xs bg-background"
+                        required
+                        autoFocus
+                      />
+                      <Input
+                        id="debtCustPhone"
+                        placeholder="Phone Number (e.g. 0911...)"
+                        value={debtCustomerPhone}
+                        onChange={(e) => setDebtCustomerPhone(e.target.value)}
+                        className="h-8 text-xs bg-background"
+                      />
+                    </div>
+                  </div>
+                )}
 
                 {/* Partial Payment Amount Input */}
                 {paymentType === "partial" && (

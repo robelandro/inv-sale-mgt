@@ -128,7 +128,7 @@ export function Sidebar({ user, companyName, logoUrl, currency }: SidebarProps) 
   return (
     <aside
       className={cn(
-        "relative hidden md:flex flex-col border-r bg-card h-screen transition-all duration-300 z-30 select-none",
+        "sticky top-0 hidden md:flex flex-col border-r bg-card h-screen transition-all duration-300 z-30 select-none",
         collapsed ? "w-16" : "w-64"
       )}
     >

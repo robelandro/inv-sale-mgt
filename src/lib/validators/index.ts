@@ -91,7 +91,8 @@ export const productSchema = z.object({
   name: z.string().min(1, "Product name is required"),
   sku: z.string().optional().or(z.literal("")),
   barcode: z.string().optional().nullable().or(z.literal("")),
-  categoryId: z.string().uuid().optional().nullable().or(z.literal("")),
+  categoryId: z.string().optional().nullable().or(z.literal("")),
+  newCategoryName: z.string().optional().nullable().or(z.literal("")),
   unitId: z.string().uuid().optional().nullable().or(z.literal("")),
   costPrice: z.coerce.number().min(0, "Cost price cannot be negative").default(0),
   sellingPrice: z.coerce.number().min(0, "Selling price cannot be negative").default(0),
@@ -141,7 +142,9 @@ export const saleItemInputSchema = z.object({
 });
 
 export const createSaleSchema = z.object({
-  customerId: z.string().uuid(),
+  customerId: z.string().optional().nullable().or(z.literal("")),
+  customerName: z.string().optional().nullable().or(z.literal("")),
+  customerPhone: z.string().optional().nullable().or(z.literal("")),
   items: z.array(saleItemInputSchema).min(1, "Sale must include at least one item"),
   discountTotal: z.coerce.number().min(0).default(0),
   amountPaid: z.coerce.number().min(0).default(0),

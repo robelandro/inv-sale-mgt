@@ -205,6 +205,7 @@ export async function createProduct(
     sku?: string;
     barcode?: string | null;
     categoryId?: string | null;
+    newCategoryName?: string | null;
     unitId?: string | null;
     costPrice?: number;
     sellingPrice?: number;
@@ -216,6 +217,24 @@ export async function createProduct(
   userId: string,
   ip?: string
 ) {
+  // Handle new category name creation on the fly
+  let categoryId = data.categoryId || null;
+  if (data.newCategoryName && data.newCategoryName.trim()) {
+    const trimmedCat = data.newCategoryName.trim();
+    const existingCat = await db.query.categories.findFirst({
+      where: sql`LOWER(${categories.name}) = LOWER(${trimmedCat})`,
+    });
+    if (existingCat) {
+      categoryId = existingCat.id;
+    } else {
+      const [newCat] = await db
+        .insert(categories)
+        .values({ name: trimmedCat })
+        .returning();
+      categoryId = newCat.id;
+    }
+  }
+
   // Generate SKU if blank
   let sku = data.sku?.trim();
   if (!sku) {
@@ -249,7 +268,7 @@ export async function createProduct(
         name: data.name.trim(),
         sku,
         barcode: data.barcode?.trim() || null,
-        categoryId: data.categoryId || null,
+        categoryId: categoryId || null,
         unitId: data.unitId || null,
         costPrice: (data.costPrice ?? 0).toFixed(2),
         sellingPrice: (data.sellingPrice ?? 0).toFixed(2),
