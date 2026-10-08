@@ -31,6 +31,7 @@ import {
   Eye,
   SlidersHorizontal,
 } from "lucide-react";
+import { useTranslation } from "@/lib/i18n/context";
 
 interface ProductsViewProps {
   initialProducts: any[];
@@ -58,6 +59,7 @@ export function ProductsView({
   searchParams,
 }: ProductsViewProps) {
   const router = useRouter();
+  const { t } = useTranslation();
 
   const defaultCategory =
     categories.find((c) => c.name.toLowerCase() === "general") || categories[0];
@@ -188,9 +190,9 @@ export function ProductsView({
       {/* Top Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Products Catalog</h1>
+          <h1 className="text-2xl font-bold tracking-tight">{t.products.title}</h1>
           <p className="text-sm text-muted-foreground">
-            Inventory master records, current stock quantities, and pricing
+            {t.products.subtitle}
           </p>
         </div>
 
@@ -198,13 +200,13 @@ export function ProductsView({
           <a href="/api/export/products" download>
             <Button variant="outline" size="sm">
               <Download className="w-4 h-4 mr-2" />
-              Export CSV
+              {t.common.export} CSV
             </Button>
           </a>
           {canManage && (
             <Button size="sm" onClick={() => setCreateDialogOpen(true)}>
               <Plus className="w-4 h-4 mr-2" />
-              New Product
+              {t.products.addProduct}
             </Button>
           )}
         </div>
@@ -217,7 +219,7 @@ export function ProductsView({
           <Input
             name="q"
             defaultValue={searchParams.q || ""}
-            placeholder="Search products by name, SKU, or barcode..."
+            placeholder={t.pos.searchPlaceholder}
             className="pl-9"
           />
         </div>
@@ -228,7 +230,7 @@ export function ProductsView({
             defaultValue={searchParams.category || "all"}
             className="h-9 rounded-md border border-input bg-background px-3 py-1 text-xs"
           >
-            <option value="all">All Categories</option>
+            <option value="all">{t.pos.allCategories}</option>
             {categories.map((c) => (
               <option key={c.id} value={c.id}>
                 {c.name}
@@ -241,14 +243,14 @@ export function ProductsView({
             defaultValue={searchParams.stock || "all"}
             className="h-9 rounded-md border border-input bg-background px-3 py-1 text-xs"
           >
-            <option value="all">All Stock Statuses</option>
-            <option value="in_stock">In Stock</option>
-            <option value="low">Low Stock</option>
-            <option value="out">Out of Stock</option>
+            <option value="all">{t.common.all} {t.products.stockStatus}</option>
+            <option value="in_stock">{t.products.inStock}</option>
+            <option value="low">{t.products.lowStock}</option>
+            <option value="out">{t.products.outOfStock}</option>
           </select>
 
           <Button type="submit" variant="secondary" size="sm" className="h-9">
-            Filter
+            {t.common.filter}
           </Button>
         </div>
       </form>
@@ -259,16 +261,16 @@ export function ProductsView({
           <table className="w-full text-sm">
             <thead className="bg-muted/50 border-b">
               <tr className="text-xs uppercase text-muted-foreground">
-                <th className="py-3 px-4 text-left font-medium">Product</th>
-                <th className="py-3 px-4 text-left font-medium">SKU / Barcode</th>
-                <th className="py-3 px-4 text-left font-medium">Category</th>
-                <th className="py-3 px-4 text-right font-medium">Stock Qty</th>
+                <th className="py-3 px-4 text-left font-medium">{t.products.productName}</th>
+                <th className="py-3 px-4 text-left font-medium">{t.products.sku} / {t.products.barcode}</th>
+                <th className="py-3 px-4 text-left font-medium">{t.products.category}</th>
+                <th className="py-3 px-4 text-right font-medium">{t.products.stockQty}</th>
                 {canViewCost && (
-                  <th className="py-3 px-4 text-right font-medium">Cost Price</th>
+                  <th className="py-3 px-4 text-right font-medium">{t.products.costPrice}</th>
                 )}
-                <th className="py-3 px-4 text-right font-medium">Selling Price</th>
-                <th className="py-3 px-4 text-center font-medium">Status</th>
-                <th className="py-3 px-4 text-right font-medium">Actions</th>
+                <th className="py-3 px-4 text-right font-medium">{t.products.sellingPrice}</th>
+                <th className="py-3 px-4 text-center font-medium">{t.common.status}</th>
+                <th className="py-3 px-4 text-right font-medium">{t.common.actions}</th>
               </tr>
             </thead>
             <tbody className="divide-y">
@@ -383,11 +385,11 @@ export function ProductsView({
       <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
-            <DialogTitle>Add New Product</DialogTitle>
+            <DialogTitle>{t.products.addProduct}</DialogTitle>
           </DialogHeader>
           <form onSubmit={handleCreateProduct} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="prodName">Product Name *</Label>
+              <Label htmlFor="prodName">{t.products.productName} *</Label>
               <Input
                 id="prodName"
                 placeholder="e.g. Wireless Barcode Scanner"
@@ -400,7 +402,7 @@ export function ProductsView({
 
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <Label htmlFor="prodSku">SKU (Auto-generated if empty)</Label>
+                <Label htmlFor="prodSku">{t.products.sku}</Label>
                 <Input
                   id="prodSku"
                   placeholder="e.g. WBS-001"
@@ -409,7 +411,7 @@ export function ProductsView({
                 />
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="prodBar">Barcode (Optional)</Label>
+                <Label htmlFor="prodBar">{t.products.barcode} ({t.common.optional})</Label>
                 <Input
                   id="prodBar"
                   placeholder="e.g. 890123456789"
@@ -422,7 +424,7 @@ export function ProductsView({
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
                 <div className="flex items-center justify-between">
-                  <Label htmlFor="prodCat">Category</Label>
+                  <Label htmlFor="prodCat">{t.products.category}</Label>
                   <button
                     type="button"
                     onClick={() => {
@@ -431,13 +433,13 @@ export function ProductsView({
                     }}
                     className="text-xs text-primary hover:underline font-medium"
                   >
-                    {isCustomCategory ? "Choose existing" : "+ Other category"}
+                    {isCustomCategory ? t.products.chooseExisting : t.products.otherCategory}
                   </button>
                 </div>
                 {isCustomCategory ? (
                   <Input
                     id="newCat"
-                    placeholder="Enter new category name..."
+                    placeholder={t.products.enterNewCategory}
                     value={newCategoryName}
                     onChange={(e) => setNewCategoryName(e.target.value)}
                     autoFocus
@@ -457,19 +459,19 @@ export function ProductsView({
                     }}
                     className="w-full h-9 rounded-md border border-input bg-background px-3 py-1 text-sm"
                   >
-                    <option value="">Select Category...</option>
+                    <option value="">{t.products.selectCategory}</option>
                     {categories.map((c) => (
                       <option key={c.id} value={c.id}>
                         {c.name}
                       </option>
                     ))}
-                    <option value="__custom__">+ Other / Enter New Category...</option>
+                    <option value="__custom__">{t.products.otherCategory}...</option>
                   </select>
                 )}
               </div>
 
               <div className="space-y-1.5">
-                <Label htmlFor="prodUnit">Unit</Label>
+                <Label htmlFor="prodUnit">{t.products.unit}</Label>
                 <select
                   id="prodUnit"
                   value={unitId}
@@ -488,7 +490,7 @@ export function ProductsView({
 
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <Label htmlFor="costPrice">Cost Price ({currency})</Label>
+                <Label htmlFor="costPrice">{t.products.costPrice} ({currency})</Label>
                 <Input
                   id="costPrice"
                   type="number"
@@ -499,7 +501,7 @@ export function ProductsView({
                 />
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="sellingPrice">Selling Price ({currency}) *</Label>
+                <Label htmlFor="sellingPrice">{t.products.sellingPrice} ({currency}) *</Label>
                 <Input
                   id="sellingPrice"
                   type="number"
@@ -514,7 +516,7 @@ export function ProductsView({
 
             <div className="grid grid-cols-2 gap-3 border-t pt-3">
               <div className="space-y-1.5">
-                <Label htmlFor="initStock">Initial Stock Quantity</Label>
+                <Label htmlFor="initStock">{t.products.initialStock}</Label>
                 <Input
                   id="initStock"
                   type="number"
@@ -523,12 +525,9 @@ export function ProductsView({
                   value={initialStock}
                   onChange={(e) => setInitialStock(e.target.value)}
                 />
-                <p className="text-[11px] text-muted-foreground">
-                  Creates an opening stock movement
-                </p>
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="lowThresh">Low Stock Threshold</Label>
+                <Label htmlFor="lowThresh">{t.products.lowStockThreshold}</Label>
                 <Input
                   id="lowThresh"
                   type="number"
@@ -540,7 +539,7 @@ export function ProductsView({
             </div>
 
             <div className="space-y-1.5">
-              <Label htmlFor="desc">Description (Optional)</Label>
+              <Label htmlFor="desc">{t.products.description} ({t.common.optional})</Label>
               <Textarea
                 id="desc"
                 placeholder="Product specifications or notes..."
@@ -557,11 +556,11 @@ export function ProductsView({
                 onClick={() => setCreateDialogOpen(false)}
                 disabled={isSubmitting}
               >
-                Cancel
+                {t.common.cancel}
               </Button>
               <Button type="submit" disabled={isSubmitting}>
                 {isSubmitting && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-                Save Product
+                {t.common.save}
               </Button>
             </DialogFooter>
           </form>

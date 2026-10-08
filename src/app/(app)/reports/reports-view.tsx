@@ -5,6 +5,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { formatCurrency, formatQuantity } from "@/lib/money";
 import { formatDate } from "@/lib/format";
+import { useTranslation } from "@/lib/i18n/context";
 import { BarChart3, TrendingUp, DollarSign, Clock, Layers } from "lucide-react";
 
 interface ReportsViewProps {
@@ -20,6 +21,8 @@ export function ReportsView({
   agingData,
   currency,
 }: ReportsViewProps) {
+  const { t } = useTranslation();
+
   // Profit Totals
   const totalRev = profitData.reduce((acc, r) => acc + parseFloat(r.revenue || "0"), 0);
   const totalCogs = profitData.reduce((acc, r) => acc + parseFloat(r.cogs || "0"), 0);
@@ -29,22 +32,22 @@ export function ReportsView({
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">Business Intelligence & Reports</h1>
+        <h1 className="text-2xl font-bold tracking-tight">{t.reports?.title || "Business Intelligence & Reports"}</h1>
         <p className="text-sm text-muted-foreground">
-          Profit & margin analytics, inventory valuation, and debt aging schedules
+          {t.reports?.subtitle || "Profit & margin analytics, inventory valuation, and debt aging schedules"}
         </p>
       </div>
 
       <Tabs defaultValue="profit" className="space-y-4">
         <TabsList className="bg-muted p-1 rounded-lg">
           <TabsTrigger value="profit" className="text-xs">
-            <TrendingUp className="w-3.5 h-3.5 mr-1.5" /> Profit & Margins
+            <TrendingUp className="w-3.5 h-3.5 mr-1.5" /> {t.reports?.profitReport || "Profit & Margins"}
           </TabsTrigger>
           <TabsTrigger value="valuation" className="text-xs">
-            <Layers className="w-3.5 h-3.5 mr-1.5" /> Stock Valuation
+            <Layers className="w-3.5 h-3.5 mr-1.5" /> {t.reports?.stockValuation || "Stock Valuation"}
           </TabsTrigger>
           <TabsTrigger value="aging" className="text-xs">
-            <Clock className="w-3.5 h-3.5 mr-1.5" /> Debt Aging Schedule
+            <Clock className="w-3.5 h-3.5 mr-1.5" /> {t.reports?.debtAging || "Debt Aging Schedule"}
           </TabsTrigger>
         </TabsList>
 
@@ -54,7 +57,7 @@ export function ReportsView({
             <Card className="rounded-card border shadow-sm">
               <CardHeader className="pb-2">
                 <CardTitle className="text-xs uppercase text-muted-foreground font-semibold">
-                  Total Revenue
+                  {t.reports?.revenue || "Total Revenue"}
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -67,7 +70,7 @@ export function ReportsView({
             <Card className="rounded-card border shadow-sm">
               <CardHeader className="pb-2">
                 <CardTitle className="text-xs uppercase text-muted-foreground font-semibold">
-                  Cost of Goods (COGS)
+                  {t.reports?.cogs || "Cost of Goods (COGS)"}
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -80,7 +83,7 @@ export function ReportsView({
             <Card className="rounded-card border shadow-sm">
               <CardHeader className="pb-2">
                 <CardTitle className="text-xs uppercase text-muted-foreground font-semibold">
-                  Gross Profit
+                  {t.reports?.grossProfit || "Gross Profit"}
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -93,7 +96,7 @@ export function ReportsView({
             <Card className="rounded-card border shadow-sm">
               <CardHeader className="pb-2">
                 <CardTitle className="text-xs uppercase text-muted-foreground font-semibold">
-                  Average Margin
+                  {t.reports?.margin || "Average Margin"}
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -106,7 +109,7 @@ export function ReportsView({
 
           <Card className="rounded-card border shadow-sm overflow-hidden">
             <CardHeader>
-              <CardTitle className="text-base font-semibold">Daily Gross Profit Breakdown</CardTitle>
+              <CardTitle className="text-base font-semibold">{t.reports?.salesSummary || "Daily Gross Profit Breakdown"}</CardTitle>
               <CardDescription className="text-xs">
                 Derived directly from snapshot item cost and sales revenue
               </CardDescription>
@@ -116,19 +119,19 @@ export function ReportsView({
                 <table className="w-full text-sm">
                   <thead className="bg-muted/50 border-b text-xs uppercase text-muted-foreground">
                     <tr>
-                      <th className="py-2.5 px-4 text-left font-medium">Date</th>
-                      <th className="py-2.5 px-4 text-center font-medium">Sales Count</th>
-                      <th className="py-2.5 px-4 text-right font-medium">Revenue</th>
-                      <th className="py-2.5 px-4 text-right font-medium">COGS</th>
-                      <th className="py-2.5 px-4 text-right font-medium">Gross Profit</th>
-                      <th className="py-2.5 px-4 text-right font-medium">Margin</th>
+                      <th className="py-2.5 px-4 text-left font-medium">{t.common?.date || "Date"}</th>
+                      <th className="py-2.5 px-4 text-center font-medium">{t.sales?.itemsCount || "Sales Count"}</th>
+                      <th className="py-2.5 px-4 text-right font-medium">{t.reports?.revenue || "Revenue"}</th>
+                      <th className="py-2.5 px-4 text-right font-medium">{t.reports?.cogs || "COGS"}</th>
+                      <th className="py-2.5 px-4 text-right font-medium">{t.reports?.grossProfit || "Gross Profit"}</th>
+                      <th className="py-2.5 px-4 text-right font-medium">{t.reports?.margin || "Margin"}</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y">
                     {profitData.length === 0 ? (
                       <tr>
                         <td colSpan={6} className="py-8 text-center text-muted-foreground text-xs">
-                          No sales data recorded in this period
+                          {t.common?.noData || "No sales data recorded in this period"}
                         </td>
                       </tr>
                     ) : (
@@ -164,7 +167,7 @@ export function ReportsView({
             <Card className="rounded-card border shadow-sm">
               <CardHeader className="pb-2">
                 <CardTitle className="text-xs uppercase text-muted-foreground font-semibold">
-                  Total Asset Cost Value
+                  {t.reports?.cogs || "Total Asset Cost Value"}
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -178,7 +181,7 @@ export function ReportsView({
             <Card className="rounded-card border shadow-sm">
               <CardHeader className="pb-2">
                 <CardTitle className="text-xs uppercase text-muted-foreground font-semibold">
-                  Total Potential Retail Value
+                  {t.reports?.revenue || "Total Potential Retail Value"}
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -192,7 +195,7 @@ export function ReportsView({
             <Card className="rounded-card border shadow-sm">
               <CardHeader className="pb-2">
                 <CardTitle className="text-xs uppercase text-muted-foreground font-semibold">
-                  Projected Gross Profit
+                  {t.reports?.grossProfit || "Projected Gross Profit"}
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -206,20 +209,20 @@ export function ReportsView({
 
           <Card className="rounded-card border shadow-sm overflow-hidden">
             <CardHeader>
-              <CardTitle className="text-base font-semibold">Inventory Valuation Ledger</CardTitle>
+              <CardTitle className="text-base font-semibold">{t.reports?.stockValuation || "Inventory Valuation Ledger"}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead className="bg-muted/50 border-b text-xs uppercase text-muted-foreground">
                     <tr>
-                      <th className="py-2.5 px-4 text-left font-medium">Product</th>
-                      <th className="py-2.5 px-4 text-left font-medium">SKU</th>
-                      <th className="py-2.5 px-4 text-right font-medium">In Stock</th>
-                      <th className="py-2.5 px-4 text-right font-medium">Unit Cost</th>
-                      <th className="py-2.5 px-4 text-right font-medium">Selling Price</th>
-                      <th className="py-2.5 px-4 text-right font-medium">Total Cost Value</th>
-                      <th className="py-2.5 px-4 text-right font-medium">Total Retail Value</th>
+                      <th className="py-2.5 px-4 text-left font-medium">{t.products?.productName || "Product"}</th>
+                      <th className="py-2.5 px-4 text-left font-medium">{t.products?.sku || "SKU"}</th>
+                      <th className="py-2.5 px-4 text-right font-medium">{t.pos?.inStock || "In Stock"}</th>
+                      <th className="py-2.5 px-4 text-right font-medium">{t.products?.costPrice || "Unit Cost"}</th>
+                      <th className="py-2.5 px-4 text-right font-medium">{t.products?.sellingPrice || "Selling Price"}</th>
+                      <th className="py-2.5 px-4 text-right font-medium">{t.reports?.cogs || "Total Cost Value"}</th>
+                      <th className="py-2.5 px-4 text-right font-medium">{t.reports?.revenue || "Total Retail Value"}</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y">
@@ -253,7 +256,7 @@ export function ReportsView({
         <TabsContent value="aging" className="space-y-4">
           <Card className="rounded-card border shadow-sm overflow-hidden">
             <CardHeader>
-              <CardTitle className="text-base font-semibold">Receivables Aging Analysis</CardTitle>
+              <CardTitle className="text-base font-semibold">{t.reports?.debtAging || "Receivables Aging Analysis"}</CardTitle>
               <CardDescription className="text-xs">
                 Classifies outstanding debt across 30, 60, 90, and 90+ day overdue buckets
               </CardDescription>
@@ -263,8 +266,8 @@ export function ReportsView({
                 <table className="w-full text-sm">
                   <thead className="bg-muted/50 border-b text-xs uppercase text-muted-foreground">
                     <tr>
-                      <th className="py-2.5 px-4 text-left font-medium">Customer</th>
-                      <th className="py-2.5 px-4 text-right font-medium">Total Debt</th>
+                      <th className="py-2.5 px-4 text-left font-medium">{t.debts?.customerName || "Customer"}</th>
+                      <th className="py-2.5 px-4 text-right font-medium">{t.debts?.totalOwed || "Total Debt"}</th>
                       <th className="py-2.5 px-4 text-right font-medium">0–30 Days</th>
                       <th className="py-2.5 px-4 text-right font-medium">31–60 Days</th>
                       <th className="py-2.5 px-4 text-right font-medium">61–90 Days</th>
@@ -275,7 +278,7 @@ export function ReportsView({
                     {agingData.length === 0 ? (
                       <tr>
                         <td colSpan={6} className="py-8 text-center text-muted-foreground text-xs">
-                          No outstanding customer debts found!
+                          {t.debts?.noDebts || "No outstanding customer debts found!"}
                         </td>
                       </tr>
                     ) : (

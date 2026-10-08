@@ -23,17 +23,19 @@ import {
   AlertCircle,
   Loader2,
   Calendar,
+  WifiOff,
+  CloudUpload,
 } from "lucide-react";
-
-interface CartItem {
-  productId: string;
-  name: string;
-  sku: string;
-  stockQty: number;
-  qty: number;
-  unitPrice: number;
-  discount: number;
-}
+import { useTranslation } from "@/lib/i18n/context";
+import { usePosStore, type CartItem } from "@/lib/store/pos-store";
+import { useSyncStore } from "@/lib/store/sync-store";
+import {
+  cacheProducts,
+  cacheCustomers,
+  getCachedProducts,
+  getCachedCustomers,
+  queueOfflineSale,
+} from "@/lib/offline/db";
 
 export function PosTerminal({
   products,
@@ -47,45 +49,99 @@ export function PosTerminal({
   canDiscount: boolean;
 }) {
   const router = useRouter();
+  const { t } = useTranslation();
   const currency = company?.currency || "USD";
   const taxEnabled = company?.taxEnabled ?? false;
   const taxRate = company ? Number(company.taxRate) : 0;
   const allowNegativeStock = company?.allowNegativeStock ?? false;
   const allowCredit = company?.allowCredit ?? true;
 
-  // Walk-in customer default
-  const walkInCustomer = customers.find((c) => c.isWalkIn) || customers[0];
+  // Zustand POS store
+  const {
+    cart,
+    searchQuery,
+    selectedCustomerId,
+    paymentType,
+    paymentMethod,
+    partialAmountPaid,
+    wholesaleDiscount,
+    dueDate,
+    debtCustomerName,
+    debtCustomerPhone,
+    notes,
+    isSubmitting,
+    completedSale,
+    receiptOpen,
+    setSearchQuery,
+    setSelectedCustomerId,
+    setPaymentType,
+    setPaymentMethod,
+    setPartialAmountPaid,
+    setWholesaleDiscount,
+    setDueDate,
+    setDebtCustomerName,
+    setDebtCustomerPhone,
+    setNotes,
+    setIsSubmitting,
+    setCompletedSale,
+    setReceiptOpen,
+    addToCart: addProductToCart,
+    updateQty: updateItemQty,
+    updateItemPrice,
+    updateItemDiscount,
+    removeFromCart: removeItemFromCart,
+    clearCart,
+    resetPos,
+  } = usePosStore();
 
-  // State
-  const [selectedCustomerId, setSelectedCustomerId] = React.useState<string>(
-    walkInCustomer?.id || ""
-  );
-  const [cart, setCart] = React.useState<CartItem[]>([]);
-  const [searchQuery, setSearchQuery] = React.useState("");
-  const [paymentType, setPaymentType] = React.useState<"full" | "partial" | "credit">("full");
-  const [paymentMethod, setPaymentMethod] = React.useState<
-    "cash" | "card" | "bank_transfer" | "mobile_money" | "other"
-  >("cash");
-  const [partialAmountPaid, setPartialAmountPaid] = React.useState<string>("");
-  const [wholesaleDiscount, setWholesaleDiscount] = React.useState<number>(0);
-  const [dueDate, setDueDate] = React.useState<string>( "");
-  const [debtCustomerName, setDebtCustomerName] = React.useState<string>("");
-  const [debtCustomerPhone, setDebtCustomerPhone] = React.useState<string>("");
-  const [notes, setNotes] = React.useState<string>("");
-  const [isSubmitting, setIsSubmitting] = React.useState(false);
+  // Zustand Sync store
+  const isOnline = useSyncStore((s) => s.isOnline);
+  const refreshPendingCount = useSyncStore((s) => s.refreshPendingCount);
 
-  // Completed sale receipt modal
-  const [completedSale, setCompletedSale] = React.useState<any>(null);
-  const [receiptOpen, setReceiptOpen] = React.useState(false);
+  // Cached state fallback for offline initialization
+  const [displayProducts, setDisplayProducts] = React.useState<any[]>(products);
+  const [displayCustomers, setDisplayCustomers] = React.useState<any[]>(customers);
 
-  const selectedCustomer = customers.find((c) => c.id === selectedCustomerId);
+  const walkInCustomer = displayCustomers.find((c) => c.isWalkIn) || displayCustomers[0];
+
+  React.useEffect(() => {
+    // If walk-in customer is not selected yet, select it
+    if (!selectedCustomerId && walkInCustomer?.id) {
+      setSelectedCustomerId(walkInCustomer.id);
+    }
+
+    // Cache to IndexedDB or load from IndexedDB if offline
+    if (products && products.length > 0) {
+      cacheProducts(products);
+      setDisplayProducts(products);
+    } else {
+      getCachedProducts().then((cached) => {
+        if (cached && cached.length > 0) {
+          setDisplayProducts(cached);
+        }
+      });
+    }
+
+    if (customers && customers.length > 0) {
+      cacheCustomers(customers);
+      setDisplayCustomers(customers);
+    } else {
+      getCachedCustomers().then((cached) => {
+        if (cached && cached.length > 0) {
+          setDisplayCustomers(cached);
+        }
+      });
+    }
+  }, [products, customers]);
+
+  const selectedCustomer = displayCustomers.find((c) => c.id === selectedCustomerId);
   const isWalkIn = selectedCustomer?.isWalkIn ?? false;
 
   // Filter products by search
   const filteredProducts = React.useMemo(() => {
-    if (!searchQuery.trim()) return products.slice(0, 15);
+    if (!searchQuery.trim()) return displayProducts.slice(0, 15);
     const q = searchQuery.toLowerCase().trim();
-    return products
+    return displayProducts
       .filter(
         (p) =>
           p.name.toLowerCase().includes(q) ||
@@ -93,95 +149,49 @@ export function PosTerminal({
           (p.barcode && p.barcode.toLowerCase().includes(q))
       )
       .slice(0, 20);
-  }, [products, searchQuery]);
+  }, [displayProducts, searchQuery]);
 
   // Barcode / exact SKU hit
   const handleBarcodeSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!searchQuery.trim()) return;
-    const match = products.find(
+    const match = displayProducts.find(
       (p) =>
         p.barcode?.toLowerCase() === searchQuery.toLowerCase().trim() ||
         p.sku?.toLowerCase() === searchQuery.toLowerCase().trim()
     );
     if (match) {
-      addToCart(match);
+      addProductToCart(match, allowNegativeStock);
       setSearchQuery("");
     }
   };
 
   const addToCart = (product: any) => {
-    const existingIndex = cart.findIndex((i) => i.productId === product.id);
-    const availableStock = Number(product.stockQty);
-
-    if (existingIndex > -1) {
-      const currentQty = cart[existingIndex].qty;
-      if (!allowNegativeStock && currentQty + 1 > availableStock) {
-        toast.error(`Cannot exceed available stock of ${availableStock} units for ${product.name}`);
-        return;
-      }
-      const updated = [...cart];
-      updated[existingIndex].qty += 1;
-      setCart(updated);
-    } else {
-      if (!allowNegativeStock && availableStock <= 0) {
-        toast.error(`"${product.name}" is out of stock`);
-        return;
-      }
-      setCart([
-        ...cart,
-        {
-          productId: product.id,
-          name: product.name,
-          sku: product.sku,
-          stockQty: availableStock,
-          qty: 1,
-          unitPrice: Number(product.sellingPrice),
-          discount: 0,
-        },
-      ]);
-    }
+    addProductToCart(product, allowNegativeStock);
   };
 
   const updateCartItemQty = (index: number, newQty: number) => {
-    if (newQty <= 0) {
-      removeFromCart(index);
-      return;
-    }
     const item = cart[index];
-    if (!allowNegativeStock && newQty > item.stockQty) {
-      toast.error(`Only ${item.stockQty} units available in stock`);
-      return;
-    }
-    const updated = [...cart];
-    updated[index].qty = newQty;
-    setCart(updated);
+    if (!item) return;
+    updateItemQty(item.productId, newQty, allowNegativeStock);
   };
 
   const updateCartItemPrice = (index: number, price: number) => {
-    const updated = [...cart];
-    updated[index].unitPrice = Math.max(0, price);
-    setCart(updated);
+    const item = cart[index];
+    if (!item) return;
+    updateItemPrice(item.productId, price);
   };
 
   const updateCartItemDiscount = (index: number, disc: number) => {
-    const updated = [...cart];
-    updated[index].discount = Math.max(0, disc);
-    setCart(updated);
+    const item = cart[index];
+    if (!item) return;
+    updateItemDiscount(item.productId, disc);
   };
 
   const removeFromCart = (index: number) => {
-    setCart(cart.filter((_, i) => i !== index));
-  };
-
-  const clearCart = () => {
-    setCart([]);
-    setWholesaleDiscount(0);
-    setPartialAmountPaid("");
-    setDebtCustomerName("");
-    setDebtCustomerPhone("");
-    setDueDate("");
-    setNotes("");
+    const item = cart[index];
+    if (!item) return;
+    removeItemFromCart(item.productId);
   };
 
   // Calculations
@@ -231,24 +241,82 @@ export function PosTerminal({
     }
 
     setIsSubmitting(true);
-    try {
-      const payload = {
-        customerId: isWalkIn && debtCustomerName.trim() ? undefined : selectedCustomerId,
-        customerName: isWalkIn && debtCustomerName.trim() ? debtCustomerName.trim() : undefined,
-        customerPhone: isWalkIn && debtCustomerPhone.trim() ? debtCustomerPhone.trim() : undefined,
-        items: cart.map((i) => ({
-          productId: i.productId,
-          qty: i.qty,
-          unitPrice: i.unitPrice,
-          discount: i.discount,
-        })),
-        discountTotal: wholesaleDiscount,
-        amountPaid: amountPaidCents / 100,
-        paymentMethod,
-        dueDate: dueDate ? new Date(dueDate).toISOString() : null,
-        notes,
-      };
 
+    const payload = {
+      customerId: isWalkIn && debtCustomerName.trim() ? undefined : selectedCustomerId,
+      customerName: isWalkIn && debtCustomerName.trim() ? debtCustomerName.trim() : undefined,
+      customerPhone: isWalkIn && debtCustomerPhone.trim() ? debtCustomerPhone.trim() : undefined,
+      items: cart.map((i) => ({
+        productId: i.productId,
+        qty: i.qty,
+        unitPrice: i.unitPrice,
+        discount: i.discount,
+        name: i.name,
+        sku: i.sku,
+      })),
+      discountTotal: wholesaleDiscount,
+      amountPaid: amountPaidCents / 100,
+      paymentMethod,
+      dueDate: dueDate ? new Date(dueDate).toISOString() : null,
+      notes,
+    };
+
+    // Offline recording helper using IndexedDB
+    const handleOfflineFallback = async (reason?: string) => {
+      try {
+        const offlineRecord = await queueOfflineSale(payload, grandTotalCents / 100);
+        const offlineSale = {
+          id: offlineRecord.id,
+          invoiceNo: offlineRecord.clientTempInvoiceNo,
+          createdAt: offlineRecord.createdAt,
+          total: grandTotalCents / 100,
+          subtotal: subtotalCents / 100,
+          taxTotal: taxCents / 100,
+          discountTotal: totalDiscountsCents / 100,
+          amountPaid: amountPaidCents / 100,
+          balanceDue: balanceDueCents / 100,
+          paymentMethod,
+          paymentStatus: balanceDueCents === 0 ? "paid" : amountPaidCents > 0 ? "partial" : "unpaid",
+          customerName: payload.customerName || selectedCustomer?.name || "Customer",
+          cashierName: "Cashier (Offline)",
+          items: cart.map((i) => ({
+            id: i.productId,
+            productName: i.name,
+            sku: i.sku,
+            qty: i.qty,
+            unitPrice: i.unitPrice,
+            discount: i.discount,
+            lineTotal: i.qty * i.unitPrice - i.discount,
+          })),
+          isOffline: true,
+        };
+
+        toast.warning(
+          reason
+            ? `${reason}. Sale saved safely in IndexedDB!`
+            : `Offline sale ${offlineRecord.clientTempInvoiceNo} saved in IndexedDB!`,
+          { duration: 5000 }
+        );
+
+        setCompletedSale(offlineSale);
+        setReceiptOpen(true);
+        resetPos(walkInCustomer?.id);
+        refreshPendingCount();
+      } catch (dbErr: any) {
+        toast.error(`Failed to store offline sale: ${dbErr.message}`);
+      } finally {
+        setIsSubmitting(false);
+      }
+    };
+
+    // If device is offline, record directly in IndexedDB
+    if (!navigator.onLine) {
+      await handleOfflineFallback();
+      return;
+    }
+
+    // If device is online, attempt server submission
+    try {
       const res = await createSaleAction(payload);
       if (!res.success || !res.sale) {
         toast.error(res.error || "Sale failed to save");
@@ -259,9 +327,10 @@ export function PosTerminal({
       toast.success(`Sale ${res.sale.invoiceNo} completed successfully!`);
       setCompletedSale(res.sale);
       setReceiptOpen(true);
-      clearCart();
+      resetPos(walkInCustomer?.id);
     } catch (err: any) {
-      toast.error(err.message || "Checkout error");
+      // Automatic fallback if network disconnected during action
+      await handleOfflineFallback("Network disconnected during submission");
     } finally {
       setIsSubmitting(false);
     }
@@ -273,11 +342,21 @@ export function PosTerminal({
 
   return (
     <div className="space-y-4">
+      {/* Offline Alert Banner */}
+      {!isOnline && (
+        <div className="flex items-center gap-2.5 p-3 bg-amber-500/10 border border-amber-500/30 text-amber-700 dark:text-amber-400 rounded-lg text-xs animate-in fade-in">
+          <WifiOff className="w-4 h-4 shrink-0" />
+          <span>
+            <strong>Offline Mode Active:</strong> Operating with local IndexedDB storage. You can continue scanning products and completing sales offline. They will be synchronized automatically when you reconnect.
+          </span>
+        </div>
+      )}
+
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 border-b pb-3">
         <div>
-          <h1 className="text-xl font-bold tracking-tight">Point of Sale (POS)</h1>
+          <h1 className="text-xl font-bold tracking-tight">{t.pos.title}</h1>
           <p className="text-xs text-muted-foreground">
-            Fast counter sales, inventory depletion, and debt tracking
+            {company?.name || "Inventory & Sales"}
           </p>
         </div>
 
@@ -289,23 +368,23 @@ export function PosTerminal({
               value={selectedCustomerId}
               onChange={(e) => {
                 setSelectedCustomerId(e.target.value);
-                const c = customers.find((cust) => cust.id === e.target.value);
+                const c = displayCustomers.find((cust) => cust.id === e.target.value);
                 if (c?.isWalkIn && paymentType !== "full") {
                   setPaymentType("full");
                 }
               }}
               className="bg-transparent text-sm font-medium focus:outline-none cursor-pointer max-w-[200px]"
             >
-              {customers.map((c) => (
+              {displayCustomers.map((c) => (
                 <option key={c.id} value={c.id}>
-                  {c.name} {c.isWalkIn ? "(Walk-in)" : ""}
+                  {c.name} {c.isWalkIn ? `(${t.pos.walkInCustomer})` : ""}
                 </option>
               ))}
             </select>
           </div>
           {selectedCustomer && !isWalkIn && (
             <div className="hidden lg:flex items-center text-xs text-muted-foreground bg-muted px-2 py-1.5 rounded-md">
-              Balance:{" "}
+              {t.pos.debtRemaining}:{" "}
               <span className="font-semibold tabular-nums ml-1 text-foreground">
                 {formatCurrency(selectedCustomer.totalOwed, currency)}
               </span>
@@ -322,7 +401,7 @@ export function PosTerminal({
             <div className="relative flex-1">
               <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="Search products by name, SKU, or scan barcode..."
+                placeholder={t.pos.searchPlaceholder}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-9"
@@ -367,7 +446,7 @@ export function PosTerminal({
                           : "bg-muted text-muted-foreground"
                       }`}
                     >
-                      {p.stockQty} in stock
+                      {isOut ? t.pos.outOfStock : `${p.stockQty} ${t.pos.inStock}`}
                     </span>
                   </div>
                 </button>
@@ -381,9 +460,9 @@ export function PosTerminal({
           <Card className="rounded-card border shadow-sm flex flex-col h-full">
             <CardHeader className="py-3 px-4 border-b flex flex-row items-center justify-between">
               <div>
-                <CardTitle className="text-sm font-semibold">Current Sale Items</CardTitle>
+                <CardTitle className="text-sm font-semibold">{t.pos.cart}</CardTitle>
                 <span className="text-xs text-muted-foreground">
-                  {cart.length} distinct item{cart.length === 1 ? "" : "s"}
+                  {cart.length} items
                 </span>
               </div>
               {cart.length > 0 && (
@@ -393,7 +472,7 @@ export function PosTerminal({
                   onClick={clearCart}
                   className="h-7 text-xs text-muted-foreground hover:text-destructive"
                 >
-                  Clear all
+                  {t.pos.clearCart}
                 </Button>
               )}
             </CardHeader>
@@ -404,7 +483,7 @@ export function PosTerminal({
                 {cart.length === 0 ? (
                   <div className="py-12 text-center text-muted-foreground text-sm flex flex-col items-center">
                     <Barcode className="h-8 w-8 stroke-1 mb-2 opacity-50" />
-                    <span>Scan barcode or click items to add to cart</span>
+                    <span>{t.pos.cartEmptyDesc}</span>
                   </div>
                 ) : (
                   cart.map((item, idx) => (
@@ -464,13 +543,13 @@ export function PosTerminal({
               {/* Financial Totals Breakdown */}
               <div className="border-t pt-3 space-y-1.5 text-sm">
                 <div className="flex justify-between text-muted-foreground text-xs">
-                  <span>Subtotal</span>
+                  <span>{t.pos.subtotal}</span>
                   <span className="tabular-nums">{formatCurrency(fromCents(subtotalCents), currency)}</span>
                 </div>
 
                 {canDiscount && (
                   <div className="flex items-center justify-between text-xs">
-                    <span className="text-muted-foreground">Wholesale Discount</span>
+                    <span className="text-muted-foreground">{t.pos.wholesaleDiscount}</span>
                     <input
                       type="number"
                       step="0.01"
@@ -485,13 +564,13 @@ export function PosTerminal({
 
                 {taxEnabled && (
                   <div className="flex justify-between text-muted-foreground text-xs">
-                    <span>Tax ({taxRate}%)</span>
+                    <span>{t.pos.tax} ({taxRate}%)</span>
                     <span className="tabular-nums">{formatCurrency(fromCents(taxCents), currency)}</span>
                   </div>
                 )}
 
                 <div className="flex justify-between text-base font-bold pt-1 border-t">
-                  <span>Grand Total</span>
+                  <span>{t.pos.grandTotal}</span>
                   <span className="tabular-nums text-primary">
                     {formatCurrency(fromCents(grandTotalCents), currency)}
                   </span>
@@ -502,7 +581,7 @@ export function PosTerminal({
               <div className="border-t pt-3 space-y-3">
                 <div className="space-y-1.5">
                   <Label className="text-xs font-semibold uppercase text-muted-foreground">
-                    Payment Terms
+                    {t.pos.paymentTerms}
                   </Label>
                   <div className="grid grid-cols-3 gap-1.5">
                     <button
@@ -514,7 +593,7 @@ export function PosTerminal({
                           : "bg-muted/40 hover:bg-muted text-muted-foreground"
                       }`}
                     >
-                      Paid in Full
+                      {t.pos.paidInFull}
                     </button>
                     <button
                       type="button"
@@ -526,7 +605,7 @@ export function PosTerminal({
                           : "bg-muted/40 hover:bg-muted text-muted-foreground"
                       }`}
                     >
-                      Partial (Debt)
+                      {t.pos.partialDebt}
                     </button>
                     <button
                       type="button"
@@ -538,7 +617,7 @@ export function PosTerminal({
                           : "bg-muted/40 hover:bg-muted text-muted-foreground"
                       }`}
                     >
-                      Full Credit
+                      {t.pos.fullCredit}
                     </button>
                   </div>
                 </div>
@@ -548,16 +627,16 @@ export function PosTerminal({
                   <div className="space-y-2 p-2.5 bg-blue-50/70 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-900 rounded-lg">
                     <div className="flex items-center justify-between">
                       <Label className="text-xs font-semibold text-blue-900 dark:text-blue-200">
-                        Customer Info for Debt Record
+                        {t.pos.customerDebtInfo}
                       </Label>
                       <span className="text-[10px] text-blue-700 dark:text-blue-300 font-medium">
-                        * Required
+                        * {t.common.required}
                       </span>
                     </div>
                     <div className="space-y-1.5">
                       <Input
                         id="debtCustName"
-                        placeholder="Customer Name *"
+                        placeholder={`${t.pos.customerName} *`}
                         value={debtCustomerName}
                         onChange={(e) => setDebtCustomerName(e.target.value)}
                         className="h-8 text-xs bg-background"
@@ -566,7 +645,7 @@ export function PosTerminal({
                       />
                       <Input
                         id="debtCustPhone"
-                        placeholder="Phone Number (e.g. 0911...)"
+                        placeholder={`${t.pos.customerPhone} (e.g. 0911...)`}
                         value={debtCustomerPhone}
                         onChange={(e) => setDebtCustomerPhone(e.target.value)}
                         className="h-8 text-xs bg-background"
@@ -580,10 +659,10 @@ export function PosTerminal({
                   <div className="space-y-1 p-2 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-lg">
                     <div className="flex items-center justify-between">
                       <Label htmlFor="partAmt" className="text-xs font-semibold text-amber-900 dark:text-amber-200">
-                        Amount Paid Now
+                        {t.pos.amountPaidNow}
                       </Label>
                       <span className="text-xs text-amber-800 dark:text-amber-300 font-medium">
-                        Debt: {formatCurrency(fromCents(balanceDueCents), currency)}
+                        {t.pos.debtRemaining}: {formatCurrency(fromCents(balanceDueCents), currency)}
                       </span>
                     </div>
                     <Input
@@ -604,17 +683,17 @@ export function PosTerminal({
                 {/* Payment Method (for Paid or Partial) */}
                 {paymentType !== "credit" && (
                   <div className="flex items-center gap-2">
-                    <Label className="text-xs text-muted-foreground shrink-0">Method:</Label>
+                    <Label className="text-xs text-muted-foreground shrink-0">{t.pos.paymentMethod}:</Label>
                     <select
                       value={paymentMethod}
                       onChange={(e) => setPaymentMethod(e.target.value as any)}
                       className="flex-1 h-8 rounded-md border text-xs bg-background px-2"
                     >
-                      <option value="cash">Cash</option>
-                      <option value="card">Card / POS</option>
-                      <option value="bank_transfer">Bank Transfer</option>
-                      <option value="mobile_money">Mobile Money</option>
-                      <option value="other">Other</option>
+                      <option value="cash">{t.pos.cash}</option>
+                      <option value="card">{t.pos.card}</option>
+                      <option value="bank_transfer">{t.pos.bankTransfer}</option>
+                      <option value="mobile_money">{t.pos.mobileMoney}</option>
+                      <option value="other">{t.pos.other}</option>
                     </select>
                   </div>
                 )}
@@ -623,7 +702,7 @@ export function PosTerminal({
                 {paymentType !== "full" && (
                   <div className="flex items-center gap-2">
                     <Label htmlFor="dueDate" className="text-xs text-muted-foreground shrink-0">
-                      Due Date:
+                      {t.pos.dueDate}:
                     </Label>
                     <Input
                       id="dueDate"
@@ -637,7 +716,7 @@ export function PosTerminal({
 
                 {/* Notes */}
                 <Input
-                  placeholder="Optional note for invoice..."
+                  placeholder={t.pos.notesPlaceholder}
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
                   className="h-8 text-xs"
@@ -654,7 +733,7 @@ export function PosTerminal({
                   ) : (
                     <CheckCircle className="mr-2 h-5 w-5" />
                   )}
-                  Complete Sale • {formatCurrency(fromCents(amountPaidCents), currency)}
+                  {t.pos.completeSale} • {formatCurrency(fromCents(amountPaidCents), currency)}
                 </Button>
               </div>
             </CardContent>
@@ -667,7 +746,7 @@ export function PosTerminal({
         <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-emerald-600">
-              <CheckCircle className="h-5 w-5" /> Sale Confirmed
+              <CheckCircle className="h-5 w-5" /> {t.pos.receiptSuccess}
             </DialogTitle>
           </DialogHeader>
 
@@ -678,24 +757,30 @@ export function PosTerminal({
                 id="receipt-print-area"
                 className="receipt-container border rounded-lg p-4 bg-muted/20 font-mono text-xs space-y-2 select-text"
               >
+                {completedSale.isOffline && (
+                  <div className="bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 border border-amber-300 dark:border-amber-800 py-1 px-2 rounded text-center text-[10px] font-bold tracking-wide uppercase">
+                    ⚡ Offline Transaction • Saved in IndexedDB
+                  </div>
+                )}
+
                 <div className="text-center space-y-0.5 border-b pb-2">
                   <h3 className="font-bold text-sm tracking-wide">{company?.name || "Store"}</h3>
                   {company?.address && <p>{company.address}</p>}
                   {company?.phone && <p>Tel: {company.phone}</p>}
                   <p className="text-[10px] text-muted-foreground pt-1">
-                    Invoice: <span className="font-bold">{completedSale.invoiceNo}</span>
+                    {t.pos.invoiceNo}: <span className="font-bold">{completedSale.invoiceNo}</span>
                   </p>
                   <p className="text-[10px] text-muted-foreground">
-                    Date: {new Date(completedSale.createdAt).toLocaleString()}
+                    {t.common.date}: {new Date(completedSale.createdAt).toLocaleString()}
                   </p>
                   <p className="text-[10px] text-muted-foreground">
-                    Customer: {completedSale.customerName}
+                    {t.sales.customer}: {completedSale.customerName}
                   </p>
                 </div>
 
                 <div className="divide-y pt-1">
                   {completedSale.items?.map((it: any) => (
-                    <div key={it.id} className="py-1 flex justify-between">
+                    <div key={it.id || it.productId} className="py-1 flex justify-between">
                       <div>
                         <span>{it.productName}</span>
                         <div className="text-[10px] text-muted-foreground">
@@ -711,57 +796,59 @@ export function PosTerminal({
 
                 <div className="border-t pt-2 space-y-1">
                   <div className="flex justify-between">
-                    <span>Subtotal:</span>
+                    <span>{t.pos.subtotal}:</span>
                     <span className="tabular-nums">{formatCurrency(completedSale.subtotal, currency)}</span>
                   </div>
                   {Number(completedSale.discountTotal) > 0 && (
                     <div className="flex justify-between text-muted-foreground">
-                      <span>Discount:</span>
+                      <span>{t.pos.discount}:</span>
                       <span className="tabular-nums">-{formatCurrency(completedSale.discountTotal, currency)}</span>
                     </div>
                   )}
                   {Number(completedSale.taxTotal) > 0 && (
                     <div className="flex justify-between text-muted-foreground">
-                      <span>Tax:</span>
+                      <span>{t.pos.tax}:</span>
                       <span className="tabular-nums">+{formatCurrency(completedSale.taxTotal, currency)}</span>
                     </div>
                   )}
                   <div className="flex justify-between font-bold text-sm border-t pt-1">
-                    <span>Total:</span>
+                    <span>{t.pos.grandTotal}:</span>
                     <span className="tabular-nums">{formatCurrency(completedSale.total, currency)}</span>
                   </div>
                   <div className="flex justify-between font-medium">
-                    <span>Amount Paid:</span>
+                    <span>{t.pos.receivedAmount}:</span>
                     <span className="tabular-nums">{formatCurrency(completedSale.amountPaid, currency)}</span>
                   </div>
                   {Number(completedSale.balanceDue) > 0 && (
                     <div className="flex justify-between text-rose-600 font-bold">
-                      <span>Balance Due (Debt):</span>
+                      <span>{t.pos.balanceDue}:</span>
                       <span className="tabular-nums">{formatCurrency(completedSale.balanceDue, currency)}</span>
                     </div>
                   )}
                 </div>
 
                 <div className="text-center pt-3 text-[10px] text-muted-foreground border-t">
-                  Thank you for your business!
+                  {t.pos.thankYou}
                 </div>
               </div>
 
               <DialogFooter className="flex-row sm:justify-between gap-2">
                 <Button variant="outline" size="sm" onClick={handlePrint}>
                   <Printer className="w-4 h-4 mr-2" />
-                  Print Receipt
+                  {t.pos.printReceipt}
                 </Button>
                 <div className="flex gap-2">
-                  <Button
-                    size="sm"
-                    variant="secondary"
-                    onClick={() => router.push(`/sales/${completedSale.id}`)}
-                  >
-                    View Details
-                  </Button>
+                  {!completedSale.isOffline && (
+                    <Button
+                      size="sm"
+                      variant="secondary"
+                      onClick={() => router.push(`/sales/${completedSale.id}`)}
+                    >
+                      {t.sales.viewDetails}
+                    </Button>
+                  )}
                   <Button size="sm" onClick={() => setReceiptOpen(false)}>
-                    New Sale
+                    {t.pos.newSaleBtn}
                   </Button>
                 </div>
               </DialogFooter>

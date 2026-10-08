@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { can, PERMISSIONS } from "@/lib/permissions";
+import { useTranslation } from "@/lib/i18n/context";
 import type { AuthUser } from "@/lib/auth";
 
 interface SidebarProps {
@@ -34,6 +35,7 @@ interface SidebarProps {
 export function Sidebar({ user, companyName, logoUrl, currency }: SidebarProps) {
   const pathname = usePathname();
   const [collapsed, setCollapsed] = React.useState(false);
+  const { t } = useTranslation();
 
   const canManageCompany = can(user, PERMISSIONS.COMPANY_MANAGE);
   const canManageUsers = can(user, PERMISSIONS.USERS_MANAGE);
@@ -48,50 +50,50 @@ export function Sidebar({ user, companyName, logoUrl, currency }: SidebarProps) 
 
   const navItems = [
     {
-      title: "Dashboard",
+      title: t.nav.dashboard,
       href: "/dashboard",
       icon: LayoutDashboard,
       visible: true,
     },
     {
-      title: "New Sale",
+      title: t.nav.newSale,
       href: "/sales/new",
       icon: PlusCircle,
       visible: canCreateSale,
       highlight: true,
     },
     {
-      title: "Sales",
+      title: t.nav.sales,
       href: "/sales",
       icon: ShoppingCart,
       visible: canViewSales,
     },
     {
-      title: "Products",
+      title: t.nav.products,
       href: "/products",
       icon: Package,
       visible: canViewProducts,
     },
     {
-      title: "Stock Ledger",
+      title: t.nav.stock,
       href: "/stock",
       icon: Layers,
       visible: canViewProducts,
     },
     {
-      title: "Customers",
+      title: t.nav.customers,
       href: "/customers",
       icon: Users,
       visible: canViewCustomers,
     },
     {
-      title: "Debts & Credit",
+      title: t.nav.debts,
       href: "/debts",
       icon: CreditCard,
       visible: canViewDebts,
     },
     {
-      title: "Reports",
+      title: t.nav.reports,
       href: "/reports",
       icon: BarChart3,
       visible: canViewReports,
@@ -100,25 +102,25 @@ export function Sidebar({ user, companyName, logoUrl, currency }: SidebarProps) 
 
   const settingsItems = [
     {
-      title: "Company Settings",
+      title: t.nav.companySettings,
       href: "/settings/company",
       icon: Building2,
       visible: canManageCompany,
     },
     {
-      title: "User Management",
+      title: t.nav.usersRoles,
       href: "/settings/users",
       icon: ShieldCheck,
       visible: canManageUsers,
     },
     {
-      title: "Catalog Setup",
+      title: t.nav.catalogSettings,
       href: "/settings/catalog",
       icon: ListOrdered,
       visible: canManageProducts,
     },
     {
-      title: "Audit Log",
+      title: t.nav.auditLogs,
       href: "/settings/audit",
       icon: FileText,
       visible: canViewAudit,
@@ -194,7 +196,7 @@ export function Sidebar({ user, companyName, logoUrl, currency }: SidebarProps) 
           <div className="pt-4 mt-4 border-t space-y-1">
             {!collapsed && (
               <span className="px-3 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
-                Management
+                {t.nav.management}
               </span>
             )}
             {settingsItems.map((item) => {

@@ -32,6 +32,9 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { logoutAction } from "@/app/actions/auth.actions";
+import { LanguageSwitcher } from "@/components/language-switcher";
+import { SyncStatusBadge } from "@/components/sync-status-badge";
+import { useTranslation } from "@/lib/i18n/context";
 import type { AuthUser } from "@/lib/auth";
 
 interface TopbarProps {
@@ -43,6 +46,7 @@ export function Topbar({ user, companyName }: TopbarProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
   const [mounted, setMounted] = React.useState(false);
   const pathname = usePathname();
+  const { t } = useTranslation();
 
   React.useEffect(() => {
     setMounted(true);
@@ -66,8 +70,10 @@ export function Topbar({ user, companyName }: TopbarProps) {
           <CommandPalette />
         </div>
 
-        {/* Right side: Theme toggle and User dropdown */}
-        <div className="flex items-center gap-2 sm:gap-3">
+        {/* Right side: Sync Status, Language switcher, Theme toggle, and User dropdown */}
+        <div className="flex items-center gap-1.5 sm:gap-2.5">
+          <SyncStatusBadge />
+          <LanguageSwitcher />
           <ThemeToggle />
 
           <DropdownMenu>
@@ -105,7 +111,7 @@ export function Topbar({ user, companyName }: TopbarProps) {
               <DropdownMenuItem asChild>
                 <Link href="/profile" className="cursor-pointer flex items-center">
                   <User className="mr-2 h-4 w-4" />
-                  <span>My Profile</span>
+                  <span>{t.nav.profile}</span>
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
@@ -114,7 +120,7 @@ export function Topbar({ user, companyName }: TopbarProps) {
                 className="text-destructive focus:text-destructive cursor-pointer"
               >
                 <LogOut className="mr-2 h-4 w-4" />
-                <span>Log out</span>
+                <span>{t.nav.logout}</span>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -151,6 +157,11 @@ export function Topbar({ user, companyName }: TopbarProps) {
                 </button>
               </div>
 
+              {/* Language Switcher in Mobile Drawer */}
+              <div className="py-1 mb-1 border-b">
+                <LanguageSwitcher variant="full" className="w-full justify-between" />
+              </div>
+
               <nav className="flex flex-col space-y-1 py-1">
                 <Link
                   href="/dashboard"
@@ -162,7 +173,7 @@ export function Topbar({ user, companyName }: TopbarProps) {
                   }`}
                 >
                   <LayoutDashboard className="h-4 w-4" />
-                  Dashboard
+                  {t.nav.dashboard}
                 </Link>
                 <Link
                   href="/sales/new"
@@ -170,7 +181,7 @@ export function Topbar({ user, companyName }: TopbarProps) {
                   className="flex items-center gap-3 px-3 py-2 rounded-md bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium my-1"
                 >
                   <PlusCircle className="h-4 w-4" />
-                  New Sale (POS)
+                  {t.nav.newSale}
                 </Link>
                 <Link
                   href="/sales"
@@ -182,7 +193,7 @@ export function Topbar({ user, companyName }: TopbarProps) {
                   }`}
                 >
                   <ShoppingCart className="h-4 w-4" />
-                  Sales
+                  {t.nav.sales}
                 </Link>
                 <Link
                   href="/products"
@@ -194,7 +205,7 @@ export function Topbar({ user, companyName }: TopbarProps) {
                   }`}
                 >
                   <Package className="h-4 w-4" />
-                  Products
+                  {t.nav.products}
                 </Link>
                 <Link
                   href="/stock"
@@ -206,7 +217,7 @@ export function Topbar({ user, companyName }: TopbarProps) {
                   }`}
                 >
                   <Layers className="h-4 w-4" />
-                  Stock Ledger
+                  {t.nav.stock}
                 </Link>
                 <Link
                   href="/customers"
@@ -218,7 +229,7 @@ export function Topbar({ user, companyName }: TopbarProps) {
                   }`}
                 >
                   <Users className="h-4 w-4" />
-                  Customers
+                  {t.nav.customers}
                 </Link>
                 <Link
                   href="/debts"
@@ -230,7 +241,7 @@ export function Topbar({ user, companyName }: TopbarProps) {
                   }`}
                 >
                   <CreditCard className="h-4 w-4" />
-                  Debts & Credit
+                  {t.nav.debts}
                 </Link>
                 <Link
                   href="/reports"
@@ -242,7 +253,7 @@ export function Topbar({ user, companyName }: TopbarProps) {
                   }`}
                 >
                   <BarChart3 className="h-4 w-4" />
-                  Reports
+                  {t.nav.reports}
                 </Link>
                 <div className="border-t my-2 pt-2">
                   <Link
@@ -255,7 +266,7 @@ export function Topbar({ user, companyName }: TopbarProps) {
                     }`}
                   >
                     <User className="h-4 w-4" />
-                    My Profile
+                    {t.nav.profile}
                   </Link>
                   {user.roleName === "admin" && (
                     <Link
@@ -264,7 +275,7 @@ export function Topbar({ user, companyName }: TopbarProps) {
                       className="flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium hover:bg-muted text-muted-foreground hover:text-foreground"
                     >
                       <Settings className="h-4 w-4" />
-                      Company Settings
+                      {t.nav.companySettings}
                     </Link>
                   )}
                 </div>

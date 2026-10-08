@@ -1,0 +1,24 @@
+{
+  "short_name": "InvPOS",
+  "name": "Smart Inventory & POS System",
+  "description": "Offline-ready Point of Sale & Inventory Management System with IndexedDB and Auto-Sync",
+  "start_url": "/sales/new",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#09090b",
+  "theme_color": "#10b981",
+  "icons": [
+    {
+      "src": "/icons/icon-192.svg",
+      "type": "image/svg+xml",
+      "sizes": "192x192",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-512.svg",
+      "type": "image/svg+xml",
+      "sizes": "512x512",
+      "purpose": "any maskable"
+    }
+  ]
+}

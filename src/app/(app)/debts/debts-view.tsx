@@ -17,6 +17,7 @@ import {
 import { formatCurrency } from "@/lib/money";
 import { formatDate } from "@/lib/format";
 import { toast } from "sonner";
+import { useTranslation } from "@/lib/i18n/context";
 import {
   CreditCard,
   Search,
@@ -49,6 +50,7 @@ export function DebtsView({
   overdueOnly,
 }: DebtsViewProps) {
   const router = useRouter();
+  const { t } = useTranslation();
 
   // Payment dialog state
   const [payOpen, setPayOpen] = React.useState(false);
@@ -128,9 +130,9 @@ export function DebtsView({
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Customer Debts & Credit</h1>
+          <h1 className="text-2xl font-bold tracking-tight">{t.debts?.title || "Customer Debts & Credit"}</h1>
           <p className="text-sm text-muted-foreground">
-            Track customer receivables, overdue invoices, and record FIFO debt repayments
+            {t.debts?.subtitle || "Track customer receivables, overdue invoices, and record FIFO debt repayments"}
           </p>
         </div>
 
@@ -138,7 +140,7 @@ export function DebtsView({
           <a href="/api/export/debts" download>
             <Button variant="outline" size="sm">
               <Download className="w-4 h-4 mr-2" />
-              Export CSV
+              {t.reports?.exportCsv || t.common?.export || "Export CSV"}
             </Button>
           </a>
         </div>
@@ -152,12 +154,12 @@ export function DebtsView({
             <Input
               name="q"
               defaultValue={searchQuery}
-              placeholder="Search debtor by name, phone, or email..."
+              placeholder={t.pos?.searchPlaceholder || "Search debtor by name, phone..."}
               className="pl-9"
             />
           </div>
           <Button type="submit" variant="secondary" size="sm">
-            Search
+            {t.common?.search || "Search"}
           </Button>
         </form>
 
@@ -168,7 +170,7 @@ export function DebtsView({
           className="h-9 shrink-0"
         >
           <AlertCircle className="w-4 h-4 mr-1.5" />
-          {overdueOnly ? "Showing Overdue Only" : "Filter Overdue Only"}
+          {overdueOnly ? (t.debts?.overdueDebt || "Showing Overdue Only") : (t.reports?.debtAging || "Filter Overdue Only")}
         </Button>
       </div>
 
@@ -176,15 +178,15 @@ export function DebtsView({
       <div className="p-4 rounded-xl border bg-card shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
         <div>
           <span className="text-xs uppercase font-semibold text-muted-foreground">
-            Debtors Displayed
+            {t.debts?.activeDebtors || "Debtors Displayed"}
           </span>
           <p className="text-xl font-bold text-foreground">
-            {total} Customer{total === 1 ? "" : "s"} with Balances
+            {total} {t.customers?.title || "Debtors"}
           </p>
         </div>
         <div className="text-left sm:text-right">
           <span className="text-xs uppercase font-semibold text-muted-foreground">
-            Total Receivables on Page
+            {t.debts?.totalDebt || "Total Receivables on Page"}
           </span>
           <p className="text-2xl font-bold tabular-nums text-rose-600 dark:text-rose-400">
             {formatCurrency(totalOutstandingAll, currency)}
@@ -198,20 +200,20 @@ export function DebtsView({
           <table className="w-full text-sm">
             <thead className="bg-muted/50 border-b text-xs uppercase text-muted-foreground">
               <tr>
-                <th className="py-3 px-4 text-left font-medium">Customer</th>
-                <th className="py-3 px-4 text-left font-medium">Contact</th>
-                <th className="py-3 px-4 text-center font-medium">Unpaid Sales</th>
-                <th className="py-3 px-4 text-left font-medium">Oldest Unpaid</th>
-                <th className="py-3 px-4 text-center font-medium">Status</th>
-                <th className="py-3 px-4 text-right font-medium">Total Owed</th>
-                <th className="py-3 px-4 text-right font-medium">Actions</th>
+                <th className="py-3 px-4 text-left font-medium">{t.debts?.customerName || t.common?.name || "Customer"}</th>
+                <th className="py-3 px-4 text-left font-medium">{t.debts?.phone || t.common?.phone || "Contact"}</th>
+                <th className="py-3 px-4 text-center font-medium">{t.sales?.allSales || "Unpaid Invoices"}</th>
+                <th className="py-3 px-4 text-left font-medium">{t.debts?.oldestDue || "Oldest Due"}</th>
+                <th className="py-3 px-4 text-center font-medium">{t.common?.status || "Status"}</th>
+                <th className="py-3 px-4 text-right font-medium">{t.debts?.totalOwed || "Total Owed"}</th>
+                <th className="py-3 px-4 text-right font-medium">{t.common?.actions || "Actions"}</th>
               </tr>
             </thead>
             <tbody className="divide-y">
               {debts.length === 0 ? (
                 <tr>
                   <td colSpan={7} className="py-12 text-center text-muted-foreground">
-                    No debtor records found matching criteria
+                    {t.debts?.noDebts || "No debtor records found matching criteria"}
                   </td>
                 </tr>
               ) : (
@@ -229,7 +231,7 @@ export function DebtsView({
                       {d.customerPhone || d.customerEmail || "—"}
                     </td>
                     <td className="py-3 px-4 text-center text-xs font-semibold tabular-nums">
-                      {d.unpaidSalesCount} invoice{d.unpaidSalesCount === 1 ? "" : "s"}
+                      {d.unpaidSalesCount}
                     </td>
                     <td className="py-3 px-4 text-xs text-muted-foreground">
                       {d.oldestUnpaidDate ? formatDate(d.oldestUnpaidDate) : "—"}
@@ -237,11 +239,11 @@ export function DebtsView({
                     <td className="py-3 px-4 text-center">
                       {d.isOverdue ? (
                         <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-semibold bg-rose-100 text-rose-700 dark:bg-rose-950/50 dark:text-rose-400 border border-rose-200 dark:border-rose-800">
-                          <AlertCircle className="w-3 h-3" /> Overdue
+                          <AlertCircle className="w-3 h-3" /> {t.debts?.overdueDebt || "Overdue"}
                         </span>
                       ) : (
                         <span className="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-400 border border-amber-200 dark:border-amber-800">
-                          Active Debt
+                          {t.pos?.partialDebt || "Active Debt"}
                         </span>
                       )}
                     </td>
@@ -255,12 +257,12 @@ export function DebtsView({
                           onClick={() => handleOpenPay(d)}
                           className="h-7 text-xs bg-emerald-600 hover:bg-emerald-700 text-white"
                         >
-                          <CreditCard className="w-3.5 h-3.5 mr-1" /> Pay
+                          <CreditCard className="w-3.5 h-3.5 mr-1" /> {t.debts?.recordPayment || "Pay"}
                         </Button>
                       )}
                       <Link href={`/customers/${d.customerId}`}>
                         <Button variant="ghost" size="sm" className="h-7 text-xs">
-                          <Eye className="w-3.5 h-3.5 mr-1" /> Ledger
+                          <Eye className="w-3.5 h-3.5 mr-1" /> {t.debts?.paymentHistory || "Ledger"}
                         </Button>
                       </Link>
                     </td>
@@ -275,7 +277,7 @@ export function DebtsView({
         {totalPages > 1 && (
           <div className="flex items-center justify-between px-4 py-3 border-t bg-muted/20 text-xs text-muted-foreground">
             <div>
-              Showing page {currentPage} of {totalPages}
+              {currentPage} / {totalPages}
             </div>
             <div className="flex gap-1">
               {currentPage > 1 && (
@@ -283,7 +285,7 @@ export function DebtsView({
                   href={`/debts?page=${currentPage - 1}&q=${searchQuery}&overdue=${overdueOnly}`}
                 >
                   <Button variant="outline" size="sm" className="h-7 text-xs">
-                    Previous
+                    {t.common?.back || "Previous"}
                   </Button>
                 </Link>
               )}
@@ -306,20 +308,20 @@ export function DebtsView({
         <DialogContent>
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-emerald-600">
-              <CreditCard className="h-5 w-5" /> Record Debt Repayment
+              <CreditCard className="h-5 w-5" /> {t.debts?.recordPayment || "Record Debt Repayment"}
             </DialogTitle>
           </DialogHeader>
           {selectedCustomer && (
             <form onSubmit={handleConfirmPayment} className="space-y-4">
               <div className="p-3 bg-muted/40 rounded-lg text-xs space-y-1">
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Debtor:</span>
+                  <span className="text-muted-foreground">{t.debts?.customerName || "Debtor"}:</span>
                   <span className="font-semibold text-foreground">
                     {selectedCustomer.customerName}
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Total Balance Owed:</span>
+                  <span className="text-muted-foreground">{t.debts?.totalOwed || "Total Balance Owed"}:</span>
                   <span className="font-bold text-rose-600 tabular-nums">
                     {formatCurrency(selectedCustomer.totalOwed, currency)}
                   </span>
@@ -327,7 +329,7 @@ export function DebtsView({
               </div>
 
               <div className="space-y-1.5">
-                <Label htmlFor="debtPayAmt">Payment Amount Received *</Label>
+                <Label htmlFor="debtPayAmt">{t.debts?.paymentAmount || "Payment Amount Received"} *</Label>
                 <Input
                   id="debtPayAmt"
                   type="number"
@@ -340,30 +342,30 @@ export function DebtsView({
                   required
                 />
                 <p className="text-[11px] text-muted-foreground">
-                  Rule: Automatically applied to oldest unpaid invoices first (FIFO).
+                  FIFO: Automatically applied to oldest unpaid invoices first.
                 </p>
               </div>
 
               <div className="space-y-1.5">
-                <Label>Payment Method *</Label>
+                <Label>{t.pos?.paymentMethod || "Payment Method"} *</Label>
                 <select
                   value={payMethod}
                   onChange={(e) => setPayMethod(e.target.value)}
                   className="w-full h-9 rounded-md border border-input bg-background px-3 py-1 text-sm"
                 >
-                  <option value="cash">Cash</option>
-                  <option value="card">Card / POS</option>
-                  <option value="bank_transfer">Bank Transfer</option>
-                  <option value="mobile_money">Mobile Money</option>
-                  <option value="other">Other</option>
+                  <option value="cash">{t.pos?.cash || "Cash"}</option>
+                  <option value="card">{t.pos?.card || "Card / POS"}</option>
+                  <option value="bank_transfer">{t.pos?.bankTransfer || "Bank Transfer"}</option>
+                  <option value="mobile_money">{t.pos?.mobileMoney || "Mobile Money"}</option>
+                  <option value="other">{t.common?.optional || "Other"}</option>
                 </select>
               </div>
 
               <div className="space-y-1.5">
-                <Label htmlFor="debtPayNote">Note / Reference (Optional)</Label>
+                <Label htmlFor="debtPayNote">{t.common?.notes || "Note / Reference"} ({t.common?.optional || "Optional"})</Label>
                 <Input
                   id="debtPayNote"
-                  placeholder="e.g. Receipt #00293 or bank transfer memo"
+                  placeholder="Receipt # or memo..."
                   value={payNote}
                   onChange={(e) => setPayNote(e.target.value)}
                 />
@@ -376,7 +378,7 @@ export function DebtsView({
                   onClick={() => setPayOpen(false)}
                   disabled={isPaying}
                 >
-                  Cancel
+                  {t.common?.cancel || "Cancel"}
                 </Button>
                 <Button
                   type="submit"
@@ -384,7 +386,7 @@ export function DebtsView({
                   className="bg-emerald-600 hover:bg-emerald-700 text-white"
                 >
                   {isPaying && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-                  Confirm & Apply Repayment
+                  {t.common?.confirm || "Confirm & Apply Repayment"}
                 </Button>
               </DialogFooter>
             </form>

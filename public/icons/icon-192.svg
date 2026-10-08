@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192" width="192" height="192">
+  <rect width="192" height="192" rx="40" fill="#10b981"/>
+  <!-- Shopping Bag & Inventory Icon -->
+  <path d="M56 72h80l-8 72H64L56 72z" fill="#ffffff" opacity="0.95"/>
+  <path d="M76 72V52a20 20 0 0 1 40 0v20" fill="none" stroke="#ffffff" stroke-width="10" stroke-linecap="round"/>
+  <!-- Sync Arrows -->
+  <path d="M96 95v25M84 107l12 13 12-13" fill="none" stroke="#10b981" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

@@ -2,6 +2,7 @@ import { requirePermission } from "@/lib/auth";
 import { PERMISSIONS, can } from "@/lib/permissions";
 import { getSales } from "@/services/sales.service";
 import { getCompany } from "@/services/company.service";
+import { getServerTranslations } from "@/lib/i18n/server";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,6 +18,7 @@ export default async function SalesPage({
   const sp = await searchParams;
   const user = await requirePermission(PERMISSIONS.SALES_VIEW);
   const comp = await getCompany();
+  const { t } = await getServerTranslations();
   const page = parseInt(sp.page || "1") || 1;
   const isCashierOnly = user.roleKey === "cashier";
 
@@ -36,9 +38,9 @@ export default async function SalesPage({
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Sales Ledger</h1>
+          <h1 className="text-2xl font-bold tracking-tight">{t.sales?.title || "Sales Ledger"}</h1>
           <p className="text-sm text-muted-foreground">
-            Complete transaction record, invoice statuses, and debt receivables
+            {t.sales?.subtitle || "Complete transaction record, invoice statuses, and debt receivables"}
           </p>
         </div>
 
@@ -46,14 +48,14 @@ export default async function SalesPage({
           <a href="/api/export/sales" download>
             <Button variant="outline" size="sm">
               <Download className="w-4 h-4 mr-2" />
-              Export CSV
+              {t.reports?.exportCsv || t.common?.export || "Export CSV"}
             </Button>
           </a>
           {canCreate && (
             <Link href="/sales/new">
               <Button size="sm">
                 <Plus className="w-4 h-4 mr-2" />
-                New Sale
+                {t.nav?.newSale || "New Sale"}
               </Button>
             </Link>
           )}
@@ -67,7 +69,7 @@ export default async function SalesPage({
           <Input
             name="q"
             defaultValue={sp.q || ""}
-            placeholder="Search by invoice number or customer name..."
+            placeholder={t.pos?.searchPlaceholder || "Search by invoice number or customer name..."}
             className="pl-9"
           />
         </form>
@@ -78,10 +80,10 @@ export default async function SalesPage({
             defaultValue={sp.payment || "all"}
             className="h-9 rounded-md border border-input bg-background px-3 py-1 text-xs"
           >
-            <option value="all">All Payment Statuses</option>
-            <option value="paid">Paid</option>
-            <option value="partial">Partial (Debt)</option>
-            <option value="unpaid">Unpaid / Credit</option>
+            <option value="all">{t.common?.all || "All Payment Statuses"}</option>
+            <option value="paid">{t.sales?.paid || "Paid"}</option>
+            <option value="partial">{t.sales?.partial || "Partial (Debt)"}</option>
+            <option value="unpaid">{t.sales?.unpaid || "Unpaid / Credit"}</option>
           </select>
 
           <select
@@ -89,7 +91,7 @@ export default async function SalesPage({
             defaultValue={sp.status || "all"}
             className="h-9 rounded-md border border-input bg-background px-3 py-1 text-xs"
           >
-            <option value="all">All Invoices</option>
+            <option value="all">{t.sales?.allSales || "All Invoices"}</option>
             <option value="completed">Completed</option>
             <option value="voided">Voided</option>
           </select>
@@ -102,21 +104,21 @@ export default async function SalesPage({
           <table className="w-full text-sm">
             <thead className="bg-muted/50 border-b">
               <tr className="text-xs uppercase text-muted-foreground">
-                <th className="py-3 px-4 text-left font-medium">Invoice #</th>
-                <th className="py-3 px-4 text-left font-medium">Customer</th>
-                <th className="py-3 px-4 text-left font-medium">Date</th>
-                <th className="py-3 px-4 text-left font-medium">Status</th>
-                <th className="py-3 px-4 text-right font-medium">Total</th>
-                <th className="py-3 px-4 text-right font-medium">Paid</th>
-                <th className="py-3 px-4 text-right font-medium">Balance Due</th>
-                <th className="py-3 px-4 text-right font-medium">Action</th>
+                <th className="py-3 px-4 text-left font-medium">{t.sales?.invoiceNo || "Invoice #"}</th>
+                <th className="py-3 px-4 text-left font-medium">{t.sales?.customer || "Customer"}</th>
+                <th className="py-3 px-4 text-left font-medium">{t.common?.date || "Date"}</th>
+                <th className="py-3 px-4 text-left font-medium">{t.common?.status || "Status"}</th>
+                <th className="py-3 px-4 text-right font-medium">{t.common?.total || "Total"}</th>
+                <th className="py-3 px-4 text-right font-medium">{t.sales?.paid || "Paid"}</th>
+                <th className="py-3 px-4 text-right font-medium">{t.sales?.balanceDue || "Balance Due"}</th>
+                <th className="py-3 px-4 text-right font-medium">{t.common?.actions || "Action"}</th>
               </tr>
             </thead>
             <tbody className="divide-y">
               {items.length === 0 ? (
                 <tr>
                   <td colSpan={8} className="py-12 text-center text-muted-foreground">
-                    No sales matching criteria found
+                    {t.common?.noData || "No sales matching criteria found"}
                   </td>
                 </tr>
               ) : (
@@ -170,7 +172,7 @@ export default async function SalesPage({
                       <td className="py-3 px-4 text-right">
                         <Link href={`/sales/${s.id}`}>
                           <Button variant="ghost" size="sm" className="h-7 text-xs">
-                            View
+                            {t.sales?.viewDetails || "View"}
                           </Button>
                         </Link>
                       </td>
