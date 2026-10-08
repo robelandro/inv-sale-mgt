@@ -2,6 +2,8 @@ import { isCompanyOnboarded, getCompany } from "@/services/company.service";
 import { getCurrentUser } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { LoginForm } from "./login-form";
+import { getServerTranslations } from "@/lib/i18n/server";
+import { LanguageSwitcher } from "@/components/language-switcher";
 
 export const dynamic = "force-dynamic";
 
@@ -16,10 +18,17 @@ export default async function LoginPage() {
     redirect("/dashboard");
   }
 
-  const comp = await getCompany();
+  const [comp, { t }] = await Promise.all([
+    getCompany(),
+    getServerTranslations(),
+  ]);
 
   return (
-    <div className="min-h-screen bg-muted/40 flex flex-col items-center justify-center p-4">
+    <div className="min-h-screen bg-muted/40 flex flex-col items-center justify-center p-4 relative">
+      <div className="absolute top-4 right-4">
+        <LanguageSwitcher />
+      </div>
+
       <div className="w-full max-w-md bg-card border rounded-2xl shadow-xl p-8 space-y-6">
         <div className="flex flex-col items-center text-center space-y-2">
           {comp?.logoUrl ? (
@@ -37,7 +46,7 @@ export default async function LoginPage() {
             {comp?.name || "Inventory & Sales"}
           </h1>
           <p className="text-sm text-muted-foreground">
-            Sign in to access your business operations
+            {t.auth.signInTitle}
           </p>
         </div>
 

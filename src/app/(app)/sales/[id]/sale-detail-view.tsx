@@ -20,6 +20,7 @@ import {
 import { formatCurrency } from "@/lib/money";
 import { formatDate, formatDateTime, getStatusBadgeVariant } from "@/lib/format";
 import { toast } from "sonner";
+import { useTranslation } from "@/lib/i18n/context";
 import {
   Printer,
   Ban,
@@ -42,6 +43,7 @@ export function SaleDetailView({
   canRecordPayment: boolean;
 }) {
   const router = useRouter();
+  const { t } = useTranslation();
   const currency = company?.currency || "USD";
   const isVoided = sale.status === "voided";
   const statusBadge = getStatusBadgeVariant(
@@ -129,12 +131,12 @@ export function SaleDetailView({
         <div className="flex items-center gap-3">
           <Link href="/sales">
             <Button variant="outline" size="sm">
-              <ArrowLeft className="w-4 h-4 mr-1" /> Back to Sales
+              <ArrowLeft className="w-4 h-4 mr-1" /> {t.sales?.backToSales || "Back to Sales"}
             </Button>
           </Link>
           <div>
             <h1 className="text-xl font-bold tracking-tight flex items-center gap-2">
-              Invoice {sale.invoiceNo}
+              {t.pos?.invoiceNo || "Invoice"} {sale.invoiceNo}
               <span
                 className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold border ${statusBadge.className}`}
               >
@@ -152,13 +154,13 @@ export function SaleDetailView({
               className="bg-emerald-600 hover:bg-emerald-700 text-white"
             >
               <CreditCard className="w-4 h-4 mr-2" />
-              Record Debt Payment
+              {t.debts?.recordPayment || "Record Debt Payment"}
             </Button>
           )}
 
           <Button variant="outline" size="sm" onClick={() => window.print()}>
             <Printer className="w-4 h-4 mr-2" />
-            Print
+            {t.common?.print || "Print"}
           </Button>
 
           {!isVoided && canVoid && (
@@ -168,7 +170,7 @@ export function SaleDetailView({
               onClick={() => setVoidDialogOpen(true)}
             >
               <Ban className="w-4 h-4 mr-2" />
-              Void Sale
+              {t.sales?.voidSale || "Void Sale"}
             </Button>
           )}
         </div>
@@ -179,7 +181,7 @@ export function SaleDetailView({
         <div className="rounded-xl border border-rose-300 bg-rose-50 dark:bg-rose-950/40 p-4 text-rose-900 dark:text-rose-200 space-y-1">
           <div className="flex items-center gap-2 font-bold text-sm">
             <AlertTriangle className="h-4 w-4 text-rose-600 shrink-0" />
-            This sale has been VOIDED
+            {t.sales?.voided || "This sale has been VOIDED"}
           </div>
           <p className="text-xs">
             Voided on {formatDateTime(sale.voidedAt)}. Stock was restored and debts were removed.
@@ -217,19 +219,19 @@ export function SaleDetailView({
           </div>
 
           <div className="text-left sm:text-right space-y-1 font-mono text-xs">
-            <h2 className="text-2xl font-bold tracking-tight text-foreground font-sans">
-              INVOICE
+            <h2 className="text-2xl font-bold tracking-tight text-foreground font-sans uppercase">
+              {t.pos?.invoiceNo || "INVOICE"}
             </h2>
             <p className="font-semibold text-sm text-foreground">{sale.invoiceNo}</p>
             <p className="text-muted-foreground">
-              Date: {formatDate(sale.createdAt, "MMM d, yyyy HH:mm")}
+              {t.common?.date || "Date"}: {formatDate(sale.createdAt, "MMM d, yyyy HH:mm")}
             </p>
             {sale.dueDate && (
               <p className="text-rose-600 font-medium">
-                Due Date: {formatDate(sale.dueDate)}
+                {t.pos?.dueDate || "Due Date"}: {formatDate(sale.dueDate)}
               </p>
             )}
-            <p className="text-muted-foreground">Staff: {sale.creatorName || "Staff"}</p>
+            <p className="text-muted-foreground">{t.pos?.cashier || "Staff"}: {sale.creatorName || "Staff"}</p>
           </div>
         </div>
 
@@ -237,7 +239,7 @@ export function SaleDetailView({
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="space-y-1">
             <span className="text-xs uppercase tracking-wider font-semibold text-muted-foreground">
-              Bill To Customer
+              {t.sales?.customerInfo || "Bill To Customer"}
             </span>
             <p className="font-semibold text-base text-foreground">{sale.customerName}</p>
             {sale.customerPhone && (
@@ -254,7 +256,7 @@ export function SaleDetailView({
           {sale.notes && (
             <div className="space-y-1 bg-muted/30 p-3 rounded-lg border text-xs">
               <span className="font-semibold uppercase tracking-wider text-muted-foreground">
-                Notes
+                {t.common?.notes || "Notes"}
               </span>
               <p className="text-muted-foreground">{sale.notes}</p>
             </div>
@@ -266,12 +268,12 @@ export function SaleDetailView({
           <table className="w-full text-sm">
             <thead className="bg-muted/50 border-b text-xs uppercase text-muted-foreground font-medium">
               <tr>
-                <th className="py-2.5 px-4 text-left font-medium">Item</th>
-                <th className="py-2.5 px-4 text-left font-medium">SKU</th>
-                <th className="py-2.5 px-4 text-right font-medium">Qty</th>
-                <th className="py-2.5 px-4 text-right font-medium">Unit Price</th>
-                <th className="py-2.5 px-4 text-right font-medium">Discount</th>
-                <th className="py-2.5 px-4 text-right font-medium">Total</th>
+                <th className="py-2.5 px-4 text-left font-medium">{t.products?.productName || "Item"}</th>
+                <th className="py-2.5 px-4 text-left font-medium">{t.products?.sku || "SKU"}</th>
+                <th className="py-2.5 px-4 text-right font-medium">{t.stock?.qty || "Qty"}</th>
+                <th className="py-2.5 px-4 text-right font-medium">{t.products?.sellingPrice || "Unit Price"}</th>
+                <th className="py-2.5 px-4 text-right font-medium">{t.sales?.discount || "Discount"}</th>
+                <th className="py-2.5 px-4 text-right font-medium">{t.common?.total || "Total"}</th>
               </tr>
             </thead>
             <tbody className="divide-y">
@@ -304,7 +306,7 @@ export function SaleDetailView({
             {sale.allocations && sale.allocations.length > 0 && (
               <div className="border rounded-lg p-3 space-y-2 bg-muted/20 text-xs">
                 <span className="font-semibold uppercase tracking-wider text-muted-foreground">
-                  Payments Applied
+                  {t.debts?.paymentHistory || "Payments Applied"}
                 </span>
                 <div className="divide-y">
                   {sale.allocations.map((a: any) => (
@@ -332,7 +334,7 @@ export function SaleDetailView({
 
           <div className="w-full sm:w-72 space-y-2 text-sm bg-muted/30 p-4 rounded-xl border">
             <div className="flex justify-between text-muted-foreground text-xs">
-              <span>Subtotal:</span>
+              <span>{t.sales?.subtotal || "Subtotal"}:</span>
               <span className="tabular-nums font-medium text-foreground">
                 {formatCurrency(sale.subtotal, currency)}
               </span>
@@ -340,7 +342,7 @@ export function SaleDetailView({
 
             {Number(sale.discountTotal) > 0 && (
               <div className="flex justify-between text-muted-foreground text-xs">
-                <span>Total Discount:</span>
+                <span>{t.sales?.discount || "Total Discount"}:</span>
                 <span className="tabular-nums font-medium text-emerald-600">
                   -{formatCurrency(sale.discountTotal, currency)}
                 </span>
@@ -349,7 +351,7 @@ export function SaleDetailView({
 
             {Number(sale.taxTotal) > 0 && (
               <div className="flex justify-between text-muted-foreground text-xs">
-                <span>Tax:</span>
+                <span>{t.sales?.tax || "Tax"}:</span>
                 <span className="tabular-nums font-medium text-foreground">
                   +{formatCurrency(sale.taxTotal, currency)}
                 </span>
@@ -357,14 +359,14 @@ export function SaleDetailView({
             )}
 
             <div className="flex justify-between text-base font-bold border-t pt-2">
-              <span>Grand Total:</span>
+              <span>{t.common?.total || "Grand Total"}:</span>
               <span className="tabular-nums text-primary">
                 {formatCurrency(sale.total, currency)}
               </span>
             </div>
 
             <div className="flex justify-between font-medium text-xs pt-1">
-              <span>Amount Paid:</span>
+              <span>{t.sales?.amountPaid || "Amount Paid"}:</span>
               <span className="tabular-nums text-emerald-600">
                 {formatCurrency(sale.amountPaid, currency)}
               </span>
@@ -372,7 +374,7 @@ export function SaleDetailView({
 
             {Number(sale.balanceDue) > 0 && (
               <div className="flex justify-between font-bold text-sm text-rose-600 border-t pt-1">
-                <span>Balance Due:</span>
+                <span>{t.sales?.balanceDue || "Balance Due"}:</span>
                 <span className="tabular-nums">
                   {formatCurrency(sale.balanceDue, currency)}
                 </span>
@@ -387,20 +389,20 @@ export function SaleDetailView({
         <DialogContent>
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-destructive">
-              <Ban className="h-5 w-5" /> Void Sale #{sale.invoiceNo}
+              <Ban className="h-5 w-5" /> {t.sales?.voidSale || "Void Sale"} #{sale.invoiceNo}
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-2">
             <p className="text-sm text-muted-foreground">
-              Voiding this sale is permanent. It will return all items back into stock, reverse associated debt, and mark this invoice voided.
+              {t.sales?.voidConfirm || "Voiding this sale is permanent. It will return all items back into stock, reverse associated debt, and mark this invoice voided."}
             </p>
             <div className="space-y-2">
               <Label htmlFor="voidReason">
-                Reason for Voiding <span className="text-destructive">*</span>
+                {t.stock?.reasonRequired || "Reason for Voiding"} <span className="text-destructive">*</span>
               </Label>
               <Textarea
                 id="voidReason"
-                placeholder="e.g. Customer returned items / Cashier entered wrong invoice"
+                placeholder={t.sales?.voidReason || "e.g. Customer returned items / Cashier entered wrong invoice"}
                 value={voidReason}
                 onChange={(e) => setVoidReason(e.target.value)}
                 autoFocus
@@ -413,7 +415,7 @@ export function SaleDetailView({
               onClick={() => setVoidDialogOpen(false)}
               disabled={isVoiding}
             >
-              Cancel
+              {t.common?.cancel || "Cancel"}
             </Button>
             <Button
               variant="destructive"
@@ -421,7 +423,7 @@ export function SaleDetailView({
               disabled={isVoiding || !voidReason.trim()}
             >
               {isVoiding && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-              Confirm Void
+              {t.sales?.confirmVoid || t.common?.confirm || "Confirm Void"}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -432,17 +434,17 @@ export function SaleDetailView({
         <DialogContent>
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-emerald-600">
-              <CreditCard className="h-5 w-5" /> Record Payment for #{sale.invoiceNo}
+              <CreditCard className="h-5 w-5" /> {t.debts?.recordPayment || "Record Payment"} #{sale.invoiceNo}
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-2">
             <div className="p-3 bg-muted/40 rounded-lg text-xs space-y-1">
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Customer:</span>
+                <span className="text-muted-foreground">{t.debts?.customerName || "Customer"}:</span>
                 <span className="font-semibold">{sale.customerName}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Current Balance Due:</span>
+                <span className="text-muted-foreground">{t.sales?.balanceDue || "Current Balance Due"}:</span>
                 <span className="font-bold text-rose-600 tabular-nums">
                   {formatCurrency(sale.balanceDue, currency)}
                 </span>
@@ -450,7 +452,7 @@ export function SaleDetailView({
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="pmtAmt">Amount Received</Label>
+              <Label htmlFor="pmtAmt">{t.debts?.paymentAmount || "Amount Received"}</Label>
               <Input
                 id="pmtAmt"
                 type="number"
@@ -464,25 +466,25 @@ export function SaleDetailView({
             </div>
 
             <div className="space-y-2">
-              <Label>Payment Method</Label>
+              <Label>{t.pos?.paymentMethod || "Payment Method"}</Label>
               <select
                 value={paymentMethod}
                 onChange={(e) => setPaymentMethod(e.target.value)}
                 className="w-full h-9 rounded-md border border-input bg-background px-3 py-1 text-sm"
               >
-                <option value="cash">Cash</option>
-                <option value="card">Card / POS</option>
-                <option value="bank_transfer">Bank Transfer</option>
-                <option value="mobile_money">Mobile Money</option>
-                <option value="other">Other</option>
+                <option value="cash">{t.pos?.cash || "Cash"}</option>
+                <option value="card">{t.pos?.card || "Card / POS"}</option>
+                <option value="bank_transfer">{t.pos?.bankTransfer || "Bank Transfer"}</option>
+                <option value="mobile_money">{t.pos?.mobileMoney || "Mobile Money"}</option>
+                <option value="other">{t.common?.optional || "Other"}</option>
               </select>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="pmtNote">Note (Optional)</Label>
+              <Label htmlFor="pmtNote">{t.common?.notes || "Note"} ({t.common?.optional || "Optional"})</Label>
               <Input
                 id="pmtNote"
-                placeholder="e.g. Check #1234 or receipt ref"
+                placeholder={t.debts?.repaymentMemoPlaceholder || "e.g. Check #1234 or receipt ref"}
                 value={paymentNote}
                 onChange={(e) => setPaymentNote(e.target.value)}
               />
@@ -494,7 +496,7 @@ export function SaleDetailView({
               onClick={() => setPaymentDialogOpen(false)}
               disabled={isPaying}
             >
-              Cancel
+              {t.common?.cancel || "Cancel"}
             </Button>
             <Button
               onClick={handleRecordPayment}
@@ -502,7 +504,7 @@ export function SaleDetailView({
               className="bg-emerald-600 hover:bg-emerald-700 text-white"
             >
               {isPaying && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-              Save Payment
+              {t.debts?.confirmRepayment || t.common?.save || "Save Payment"}
             </Button>
           </DialogFooter>
         </DialogContent>

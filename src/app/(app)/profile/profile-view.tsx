@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { toast } from "sonner";
 import { User, Lock, Shield, AlertTriangle, Loader2 } from "lucide-react";
+import { useTranslation } from "@/lib/i18n/context";
 import type { AuthUser } from "@/lib/auth";
 
 export function ProfileView({
@@ -19,6 +20,7 @@ export function ProfileView({
   forcedPasswordChange: boolean;
 }) {
   const router = useRouter();
+  const { t } = useTranslation();
 
   // Profile Name
   const [name, setName] = React.useState(user.name);
@@ -41,7 +43,7 @@ export function ProfileView({
         toast.error(res.error || "Failed to update profile name");
         return;
       }
-      toast.success("Profile updated");
+      toast.success(t.profile.profileUpdated);
       router.refresh();
     } catch (err: any) {
       toast.error(err.message);
@@ -74,7 +76,7 @@ export function ProfileView({
         return;
       }
 
-      toast.success("Password changed successfully!");
+      toast.success(t.profile.passwordChanged);
       setCurrentPassword("");
       setNewPassword("");
       setConfirmPassword("");
@@ -92,9 +94,9 @@ export function ProfileView({
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">My Profile & Security</h1>
+        <h1 className="text-2xl font-bold tracking-tight">{t.profile.title}</h1>
         <p className="text-sm text-muted-foreground">
-          Manage your personal credentials, system password, and review granted permissions
+          {t.profile.subtitle}
         </p>
       </div>
 
@@ -102,9 +104,9 @@ export function ProfileView({
         <div className="rounded-xl border border-amber-300 bg-amber-50 dark:bg-amber-950/40 p-4 text-amber-900 dark:text-amber-200 flex items-start gap-3">
           <AlertTriangle className="h-5 w-5 text-amber-600 shrink-0 mt-0.5" />
           <div className="text-xs">
-            <p className="font-semibold text-sm">Password Change Required</p>
+            <p className="font-semibold text-sm">{t.profile.passwordChangeRequired}</p>
             <p>
-              Your administrator has generated a temporary password for your account. Please set a new personal password below before continuing.
+              {t.profile.passwordChangeRequiredDesc}
             </p>
           </div>
         </div>
@@ -114,16 +116,16 @@ export function ProfileView({
       <Card className="rounded-card border shadow-sm">
         <CardHeader>
           <CardTitle className="text-base font-semibold flex items-center gap-2">
-            <User className="h-4 w-4 text-primary" /> Profile Details
+            <User className="h-4 w-4 text-primary" /> {t.profile.profileDetails}
           </CardTitle>
           <CardDescription className="text-xs">
-            Your name and email associated with audit records
+            {t.profile.profileDetailsDesc}
           </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleUpdateName} className="space-y-4">
             <div className="space-y-1.5">
-              <Label htmlFor="pName">Full Name</Label>
+              <Label htmlFor="pName">{t.profile.fullName}</Label>
               <Input
                 id="pName"
                 value={name}
@@ -133,12 +135,12 @@ export function ProfileView({
             </div>
 
             <div className="space-y-1.5">
-              <Label htmlFor="pEmail">Email Address</Label>
+              <Label htmlFor="pEmail">{t.profile.emailAddress}</Label>
               <Input id="pEmail" value={user.email} disabled className="bg-muted/50" />
             </div>
 
             <div className="space-y-1.5">
-              <Label>Assigned Role</Label>
+              <Label>{t.profile.assignedRole}</Label>
               <div className="flex items-center gap-2">
                 <span className="inline-flex items-center gap-1.5 bg-primary/10 text-primary text-xs font-semibold px-2.5 py-1 rounded-md">
                   <Shield className="h-3.5 w-3.5" />
@@ -149,7 +151,7 @@ export function ProfileView({
 
             <Button type="submit" size="sm" disabled={isSavingName || name === user.name}>
               {isSavingName && <Loader2 className="w-3.5 h-3.5 mr-1 animate-spin" />}
-              Save Profile
+              {t.profile.saveProfile}
             </Button>
           </form>
         </CardContent>
@@ -159,16 +161,16 @@ export function ProfileView({
       <Card className="rounded-card border shadow-sm">
         <CardHeader>
           <CardTitle className="text-base font-semibold flex items-center gap-2">
-            <Lock className="h-4 w-4 text-primary" /> Change Password
+            <Lock className="h-4 w-4 text-primary" /> {t.profile.changePassword}
           </CardTitle>
           <CardDescription className="text-xs">
-            Must be at least 8 characters long
+            {t.profile.changePasswordDesc}
           </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleChangePassword} className="space-y-4">
             <div className="space-y-1.5">
-              <Label htmlFor="curPass">Current Password</Label>
+              <Label htmlFor="curPass">{t.profile.currentPassword}</Label>
               <Input
                 id="curPass"
                 type="password"
@@ -180,7 +182,7 @@ export function ProfileView({
             </div>
 
             <div className="space-y-1.5">
-              <Label htmlFor="newPass">New Password (min 8 chars)</Label>
+              <Label htmlFor="newPass">{t.profile.newPassword}</Label>
               <Input
                 id="newPass"
                 type="password"
@@ -192,7 +194,7 @@ export function ProfileView({
             </div>
 
             <div className="space-y-1.5">
-              <Label htmlFor="confPass">Confirm New Password</Label>
+              <Label htmlFor="confPass">{t.profile.confirmNewPassword}</Label>
               <Input
                 id="confPass"
                 type="password"
@@ -209,7 +211,7 @@ export function ProfileView({
               disabled={isChangingPass || !currentPassword || !newPassword}
             >
               {isChangingPass && <Loader2 className="w-3.5 h-3.5 mr-1 animate-spin" />}
-              Update Password
+              {t.profile.updatePassword}
             </Button>
           </form>
         </CardContent>
@@ -218,9 +220,9 @@ export function ProfileView({
       {/* Granted Permissions List */}
       <Card className="rounded-card border shadow-sm">
         <CardHeader>
-          <CardTitle className="text-base font-semibold">Granted Permissions</CardTitle>
+          <CardTitle className="text-base font-semibold">{t.profile.grantedPermissions}</CardTitle>
           <CardDescription className="text-xs">
-            Functions authorized for your account based on your role
+            {t.profile.grantedPermissionsDesc}
           </CardDescription>
         </CardHeader>
         <CardContent>

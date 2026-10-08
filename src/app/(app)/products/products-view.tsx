@@ -280,7 +280,7 @@ export function ProductsView({
                     colSpan={canViewCost ? 8 : 7}
                     className="py-12 text-center text-muted-foreground"
                   >
-                    No products found matching criteria
+                    {t.common.noData}
                   </td>
                 </tr>
               ) : (
@@ -332,7 +332,7 @@ export function ProductsView({
                       <td className="py-3 px-4 text-right space-x-1">
                         <Link href={`/products/${p.id}`}>
                           <Button variant="ghost" size="sm" className="h-7 text-xs">
-                            <Eye className="h-3.5 w-3.5 mr-1" /> View
+                            <Eye className="h-3.5 w-3.5 mr-1" /> {t.common.view}
                           </Button>
                         </Link>
                         {canManage && (
@@ -341,7 +341,7 @@ export function ProductsView({
                             size="sm"
                             onClick={() => handleArchive(p.id, p.name)}
                             className="h-7 text-xs text-muted-foreground hover:text-destructive"
-                            title="Archive product"
+                            title="Archive"
                           >
                             <Archive className="h-3.5 w-3.5" />
                           </Button>
@@ -359,20 +359,20 @@ export function ProductsView({
         {totalPages > 1 && (
           <div className="flex items-center justify-between px-4 py-3 border-t bg-muted/20 text-xs text-muted-foreground">
             <div>
-              Showing page {currentPage} of {totalPages} ({total} total products)
+              {t.common?.showingPage || "Showing page"} {currentPage} {t.common?.of || "of"} {totalPages} ({total} {t.common?.totalRecords || "total products"})
             </div>
             <div className="flex gap-1">
               {currentPage > 1 && (
                 <Link href={`/products?page=${currentPage - 1}`}>
                   <Button variant="outline" size="sm" className="h-7 text-xs">
-                    Previous
+                    {t.common?.previous || "Previous"}
                   </Button>
                 </Link>
               )}
               {currentPage < totalPages && (
                 <Link href={`/products?page=${currentPage + 1}`}>
                   <Button variant="outline" size="sm" className="h-7 text-xs">
-                    Next
+                    {t.common?.next || "Next"}
                   </Button>
                 </Link>
               )}

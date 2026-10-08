@@ -4,27 +4,31 @@ import { getAuditLogs } from "@/services/audit.service";
 import { formatDate } from "@/lib/format";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { ShieldCheck } from "lucide-react";
+import { getServerTranslations } from "@/lib/i18n/server";
 
 export default async function AuditPage() {
   await requirePermission(PERMISSIONS.AUDIT_VIEW);
-  const logs = await getAuditLogs(200);
+  const [logs, { t }] = await Promise.all([
+    getAuditLogs(200),
+    getServerTranslations(),
+  ]);
 
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">System Audit Log</h1>
+        <h1 className="text-2xl font-bold tracking-tight">{t.audit.title}</h1>
         <p className="text-sm text-muted-foreground">
-          Immutable forensic record of all logins, stock adjustments, voids, payment reversals, and user changes
+          {t.audit.subtitle}
         </p>
       </div>
 
       <Card className="rounded-card border shadow-sm overflow-hidden">
         <CardHeader>
           <CardTitle className="text-base font-semibold flex items-center gap-2">
-            <ShieldCheck className="h-4 w-4 text-primary" /> Recent System Audit Records
+            <ShieldCheck className="h-4 w-4 text-primary" /> {t.audit.recentRecords}
           </CardTitle>
           <CardDescription className="text-xs">
-            Showing latest {logs.length} logged operations
+            {t.audit.showingLatest.replace("{{count}}", String(logs.length))}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -32,18 +36,18 @@ export default async function AuditPage() {
             <table className="w-full text-sm">
               <thead className="bg-muted/50 border-b text-xs uppercase text-muted-foreground font-medium">
                 <tr>
-                  <th className="py-2.5 px-4 text-left font-medium">Timestamp</th>
-                  <th className="py-2.5 px-4 text-left font-medium">Operator</th>
-                  <th className="py-2.5 px-4 text-left font-medium">Action</th>
-                  <th className="py-2.5 px-4 text-left font-medium">Entity</th>
-                  <th className="py-2.5 px-4 text-left font-medium">Details & Changes</th>
+                  <th className="py-2.5 px-4 text-left font-medium">{t.audit.timestamp}</th>
+                  <th className="py-2.5 px-4 text-left font-medium">{t.audit.operator}</th>
+                  <th className="py-2.5 px-4 text-left font-medium">{t.audit.action}</th>
+                  <th className="py-2.5 px-4 text-left font-medium">{t.audit.entity}</th>
+                  <th className="py-2.5 px-4 text-left font-medium">{t.audit.details}</th>
                 </tr>
               </thead>
               <tbody className="divide-y font-mono text-xs">
                 {logs.length === 0 ? (
                   <tr>
                     <td colSpan={5} className="py-8 text-center text-muted-foreground">
-                      No audit records found
+                      {t.audit.noRecords}
                     </td>
                   </tr>
                 ) : (

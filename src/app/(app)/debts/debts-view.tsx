@@ -170,7 +170,9 @@ export function DebtsView({
           className="h-9 shrink-0"
         >
           <AlertCircle className="w-4 h-4 mr-1.5" />
-          {overdueOnly ? (t.debts?.overdueDebt || "Showing Overdue Only") : (t.reports?.debtAging || "Filter Overdue Only")}
+          {overdueOnly
+            ? (t.debts?.showingOverdue || "Showing Overdue Only")
+            : (t.debts?.filterOverdue || "Filter Overdue Only")}
         </Button>
       </div>
 
@@ -186,7 +188,7 @@ export function DebtsView({
         </div>
         <div className="text-left sm:text-right">
           <span className="text-xs uppercase font-semibold text-muted-foreground">
-            {t.debts?.totalDebt || "Total Receivables on Page"}
+            {t.debts?.totalDebtOnPage || t.debts?.totalDebt || "Total Receivables on Page"}
           </span>
           <p className="text-2xl font-bold tabular-nums text-rose-600 dark:text-rose-400">
             {formatCurrency(totalOutstandingAll, currency)}
@@ -202,7 +204,7 @@ export function DebtsView({
               <tr>
                 <th className="py-3 px-4 text-left font-medium">{t.debts?.customerName || t.common?.name || "Customer"}</th>
                 <th className="py-3 px-4 text-left font-medium">{t.debts?.phone || t.common?.phone || "Contact"}</th>
-                <th className="py-3 px-4 text-center font-medium">{t.sales?.allSales || "Unpaid Invoices"}</th>
+                <th className="py-3 px-4 text-center font-medium">{t.debts?.unpaidInvoices || "Unpaid Invoices"}</th>
                 <th className="py-3 px-4 text-left font-medium">{t.debts?.oldestDue || "Oldest Due"}</th>
                 <th className="py-3 px-4 text-center font-medium">{t.common?.status || "Status"}</th>
                 <th className="py-3 px-4 text-right font-medium">{t.debts?.totalOwed || "Total Owed"}</th>
@@ -277,7 +279,7 @@ export function DebtsView({
         {totalPages > 1 && (
           <div className="flex items-center justify-between px-4 py-3 border-t bg-muted/20 text-xs text-muted-foreground">
             <div>
-              {currentPage} / {totalPages}
+              {t.common?.showingPage || "Showing page"} {currentPage} {t.common?.of || "of"} {totalPages}
             </div>
             <div className="flex gap-1">
               {currentPage > 1 && (
@@ -285,7 +287,7 @@ export function DebtsView({
                   href={`/debts?page=${currentPage - 1}&q=${searchQuery}&overdue=${overdueOnly}`}
                 >
                   <Button variant="outline" size="sm" className="h-7 text-xs">
-                    {t.common?.back || "Previous"}
+                    {t.common?.previous || "Previous"}
                   </Button>
                 </Link>
               )}
@@ -294,7 +296,7 @@ export function DebtsView({
                   href={`/debts?page=${currentPage + 1}&q=${searchQuery}&overdue=${overdueOnly}`}
                 >
                   <Button variant="outline" size="sm" className="h-7 text-xs">
-                    Next
+                    {t.common?.next || "Next"}
                   </Button>
                 </Link>
               )}
@@ -342,7 +344,7 @@ export function DebtsView({
                   required
                 />
                 <p className="text-[11px] text-muted-foreground">
-                  FIFO: Automatically applied to oldest unpaid invoices first.
+                  {t.debts?.fifoNotice || "FIFO: Automatically applied to oldest unpaid invoices first."}
                 </p>
               </div>
 
@@ -365,7 +367,7 @@ export function DebtsView({
                 <Label htmlFor="debtPayNote">{t.common?.notes || "Note / Reference"} ({t.common?.optional || "Optional"})</Label>
                 <Input
                   id="debtPayNote"
-                  placeholder="Receipt # or memo..."
+                  placeholder={t.debts?.repaymentMemoPlaceholder || "Receipt # or memo..."}
                   value={payNote}
                   onChange={(e) => setPayNote(e.target.value)}
                 />
@@ -386,7 +388,7 @@ export function DebtsView({
                   className="bg-emerald-600 hover:bg-emerald-700 text-white"
                 >
                   {isPaying && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-                  {t.common?.confirm || "Confirm & Apply Repayment"}
+                  {t.debts?.confirmRepayment || t.common?.confirm || "Confirm & Apply Repayment"}
                 </Button>
               </DialogFooter>
             </form>

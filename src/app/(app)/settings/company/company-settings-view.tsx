@@ -10,9 +10,11 @@ import { Switch } from "@/components/ui/switch";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { toast } from "sonner";
 import { Building2, Upload, Loader2, Save } from "lucide-react";
+import { useTranslation } from "@/lib/i18n/context";
 
 export function CompanySettingsView({ initialCompany }: { initialCompany: any }) {
   const router = useRouter();
+  const { t } = useTranslation();
 
   const [name, setName] = React.useState(initialCompany?.name || "");
   const [currency, setCurrency] = React.useState(initialCompany?.currency || "USD");
@@ -49,6 +51,16 @@ export function CompanySettingsView({ initialCompany }: { initialCompany: any })
     const file = e.target.files?.[0];
     if (!file) return;
 
+    if (!file.type || !file.type.startsWith("image/")) {
+      toast.error(t.settings.invalidImageType || "Please select an image file (PNG, JPG, WebP, SVG)");
+      return;
+    }
+
+    if (file.size > 400 * 1024) {
+      toast.error(t.settings.logoSizeLimit || "Image size must not exceed 400 KB");
+      return;
+    }
+
     setIsUploading(true);
     const fd = new FormData();
     fd.append("file", file);
@@ -58,7 +70,7 @@ export function CompanySettingsView({ initialCompany }: { initialCompany: any })
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Upload failed");
       setLogoUrl(data.url);
-      toast.success("Logo uploaded successfully");
+      toast.success(t.settings.logoSuccess);
     } catch (err: any) {
       toast.error(err.message);
     } finally {
@@ -69,7 +81,7 @@ export function CompanySettingsView({ initialCompany }: { initialCompany: any })
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim()) {
-      toast.error("Company name is required");
+      toast.error(t.settings.companyNameRequired);
       return;
     }
 
@@ -97,7 +109,7 @@ export function CompanySettingsView({ initialCompany }: { initialCompany: any })
         return;
       }
 
-      toast.success("Company settings updated successfully");
+      toast.success(t.settings.savedSuccess);
       router.refresh();
     } catch (err: any) {
       toast.error(err.message || "Failed to update settings");
@@ -110,9 +122,9 @@ export function CompanySettingsView({ initialCompany }: { initialCompany: any })
     <form onSubmit={handleSave} className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Company & System Settings</h1>
+          <h1 className="text-2xl font-bold tracking-tight">{t.settings.title}</h1>
           <p className="text-sm text-muted-foreground">
-            Configure business identity, invoices, inventory rules, and tax parameters
+            {t.settings.subtitle}
           </p>
         </div>
 
@@ -122,7 +134,7 @@ export function CompanySettingsView({ initialCompany }: { initialCompany: any })
           ) : (
             <Save className="w-4 h-4 mr-2" />
           )}
-          Save Settings
+          {t.settings.saveSettings}
         </Button>
       </div>
 
@@ -130,14 +142,14 @@ export function CompanySettingsView({ initialCompany }: { initialCompany: any })
         {/* Company Identity */}
         <Card className="rounded-card border shadow-sm">
           <CardHeader>
-            <CardTitle className="text-base font-semibold">Company Profile</CardTitle>
+            <CardTitle className="text-base font-semibold">{t.settings.companyProfile}</CardTitle>
             <CardDescription className="text-xs">
-              Appears on receipts, top of sidebar, and customer invoices
+              {t.settings.companyProfileDesc}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-1.5">
-              <Label htmlFor="sName">Company Name *</Label>
+              <Label htmlFor="sName">{t.settings.companyName} *</Label>
               <Input
                 id="sName"
                 value={name}
@@ -148,7 +160,7 @@ export function CompanySettingsView({ initialCompany }: { initialCompany: any })
 
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <Label htmlFor="sCurr">Currency Code *</Label>
+                <Label htmlFor="sCurr">{t.settings.currencyCode} *</Label>
                 <Input
                   id="sCurr"
                   value={currency}
@@ -157,7 +169,7 @@ export function CompanySettingsView({ initialCompany }: { initialCompany: any })
                 />
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="sPref">Invoice Prefix *</Label>
+                <Label htmlFor="sPref">{t.settings.invoicePrefix} *</Label>
                 <Input
                   id="sPref"
                   value={invoicePrefix}
@@ -169,7 +181,7 @@ export function CompanySettingsView({ initialCompany }: { initialCompany: any })
 
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <Label htmlFor="sPhone">Phone Number</Label>
+                <Label htmlFor="sPhone">{t.settings.phoneNumber}</Label>
                 <Input
                   id="sPhone"
                   value={phone}
@@ -177,7 +189,7 @@ export function CompanySettingsView({ initialCompany }: { initialCompany: any })
                 />
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="sEmail">Email Address</Label>
+                <Label htmlFor="sEmail">{t.settings.emailAddress}</Label>
                 <Input
                   id="sEmail"
                   value={email}
@@ -187,7 +199,7 @@ export function CompanySettingsView({ initialCompany }: { initialCompany: any })
             </div>
 
             <div className="space-y-1.5">
-              <Label htmlFor="sAddr">Street Address</Label>
+              <Label htmlFor="sAddr">{t.settings.streetAddress}</Label>
               <Input
                 id="sAddr"
                 value={address}
@@ -197,7 +209,7 @@ export function CompanySettingsView({ initialCompany }: { initialCompany: any })
 
             {/* Logo */}
             <div className="space-y-2 border-t pt-3">
-              <Label>Logo</Label>
+              <Label>{t.settings.logo}</Label>
               <div className="flex items-center gap-4">
                 {logoUrl ? (
                   <img
@@ -207,14 +219,14 @@ export function CompanySettingsView({ initialCompany }: { initialCompany: any })
                   />
                 ) : (
                   <div className="h-12 w-12 rounded border border-dashed flex items-center justify-center text-muted-foreground text-xs">
-                    No logo
+                    {t.settings.noLogo}
                   </div>
                 )}
                 <div>
                   <input
                     type="file"
                     id="set-logo"
-                    accept="image/png,image/jpeg,image/webp,image/svg+xml"
+                    accept="image/*"
                     className="hidden"
                     onChange={handleLogoUpload}
                   />
@@ -226,8 +238,11 @@ export function CompanySettingsView({ initialCompany }: { initialCompany: any })
                     onClick={() => document.getElementById("set-logo")?.click()}
                   >
                     {isUploading && <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" />}
-                    {logoUrl ? "Replace Logo" : "Upload Logo"}
+                    {logoUrl ? t.settings.replaceLogo : t.settings.uploadLogo}
                   </Button>
+                  <p className="text-[11px] text-muted-foreground mt-1">
+                    {t.settings.logoMaxNote || "Max 400 KB, image only"}
+                  </p>
                 </div>
               </div>
             </div>
@@ -237,17 +252,17 @@ export function CompanySettingsView({ initialCompany }: { initialCompany: any })
         {/* Business Rules */}
         <Card className="rounded-card border shadow-sm">
           <CardHeader>
-            <CardTitle className="text-base font-semibold">Rules & Sales Tax</CardTitle>
+            <CardTitle className="text-base font-semibold">{t.settings.rulesAndTax}</CardTitle>
             <CardDescription className="text-xs">
-              Govern inventory depletion policies and credit transactions
+              {t.settings.rulesAndTaxDesc}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-5">
             <div className="flex items-center justify-between">
               <div className="space-y-0.5 pr-4">
-                <Label className="text-sm font-semibold">Allow Negative Stock Selling</Label>
+                <Label className="text-sm font-semibold">{t.settings.allowNegativeStock}</Label>
                 <p className="text-xs text-muted-foreground">
-                  When turned off, sales exceeding current stock are strictly rejected.
+                  {t.settings.allowNegativeStockDesc}
                 </p>
               </div>
               <Switch
@@ -258,9 +273,9 @@ export function CompanySettingsView({ initialCompany }: { initialCompany: any })
 
             <div className="flex items-center justify-between border-t pt-4">
               <div className="space-y-0.5 pr-4">
-                <Label className="text-sm font-semibold">Allow Credit (Debt) Sales</Label>
+                <Label className="text-sm font-semibold">{t.settings.allowCredit}</Label>
                 <p className="text-xs text-muted-foreground">
-                  Allow sales with partial payments or full debt to registered customers.
+                  {t.settings.allowCreditDesc}
                 </p>
               </div>
               <Switch
@@ -270,7 +285,7 @@ export function CompanySettingsView({ initialCompany }: { initialCompany: any })
             </div>
 
             <div className="border-t pt-4 space-y-1.5">
-              <Label htmlFor="sLow">Default Low-Stock Threshold</Label>
+              <Label htmlFor="sLow">{t.settings.lowStockThreshold}</Label>
               <Input
                 id="sLow"
                 type="number"
@@ -284,9 +299,9 @@ export function CompanySettingsView({ initialCompany }: { initialCompany: any })
             <div className="border-t pt-4 space-y-3">
               <div className="flex items-center justify-between">
                 <div className="space-y-0.5">
-                  <Label className="text-sm font-semibold">Enable Sales Tax</Label>
+                  <Label className="text-sm font-semibold">{t.settings.enableSalesTax}</Label>
                   <p className="text-xs text-muted-foreground">
-                    Automatically add sales tax to calculated invoice totals
+                    {t.settings.enableSalesTaxDesc}
                   </p>
                 </div>
                 <Switch
@@ -297,7 +312,7 @@ export function CompanySettingsView({ initialCompany }: { initialCompany: any })
 
               {taxEnabled && (
                 <div className="space-y-1.5 pl-2 border-l-2 border-primary">
-                  <Label htmlFor="sTax">Default Tax Rate (%)</Label>
+                  <Label htmlFor="sTax">{t.settings.defaultTaxRate}</Label>
                   <Input
                     id="sTax"
                     type="number"

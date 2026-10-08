@@ -20,6 +20,7 @@ import {
 import { formatCurrency } from "@/lib/money";
 import { formatDate } from "@/lib/format";
 import { toast } from "sonner";
+import { useTranslation } from "@/lib/i18n/context";
 import {
   ArrowLeft,
   CreditCard,
@@ -49,6 +50,7 @@ export function CustomerDetailView({
   canManage: boolean;
 }) {
   const router = useRouter();
+  const { t } = useTranslation();
   const owes = Number(currentBalance) > 0;
 
   // Record Payment Dialog State
@@ -142,7 +144,7 @@ export function CustomerDetailView({
         <div className="flex items-center gap-3">
           <Link href="/customers">
             <Button variant="outline" size="sm">
-              <ArrowLeft className="w-4 h-4 mr-1" /> Customers
+              <ArrowLeft className="w-4 h-4 mr-1" /> {t.customers?.title || "Customers"}
             </Button>
           </Link>
           <div>
@@ -150,7 +152,7 @@ export function CustomerDetailView({
               {customer.name}
               {customer.isWalkIn && (
                 <span className="text-xs bg-muted px-2 py-0.5 rounded text-muted-foreground font-normal">
-                  Walk-in
+                  {t.pos?.walkInCustomer || "Walk-in"}
                 </span>
               )}
             </h1>
@@ -168,14 +170,14 @@ export function CustomerDetailView({
               className="bg-emerald-600 hover:bg-emerald-700 text-white"
             >
               <CreditCard className="w-4 h-4 mr-2" />
-              Record Debt Payment
+              {t.debts?.recordPayment || "Record Debt Payment"}
             </Button>
           )}
 
           {canManage && (
             <Button size="sm" variant="outline" onClick={() => setEditOpen(true)}>
               <Edit className="w-4 h-4 mr-2" />
-              Edit Account
+              {t.common?.edit || "Edit Account"}
             </Button>
           )}
         </div>
@@ -187,7 +189,7 @@ export function CustomerDetailView({
         <Card className="rounded-card border shadow-sm">
           <CardHeader className="pb-2">
             <CardTitle className="text-xs font-semibold uppercase text-muted-foreground">
-              Current Outstanding Balance
+              {t.customers?.balance || "Current Outstanding Balance"}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -199,9 +201,9 @@ export function CustomerDetailView({
               {formatCurrency(currentBalance, currency)}
             </div>
             <p className="text-xs text-muted-foreground mt-1">
-              Credit Limit:{" "}
+              {t.customers?.creditLimit || "Credit Limit"}:{" "}
               <span className="font-semibold text-foreground">
-                {customer.creditLimit ? formatCurrency(customer.creditLimit, currency) : "No limit"}
+                {customer.creditLimit ? formatCurrency(customer.creditLimit, currency) : "—"}
               </span>
             </p>
           </CardContent>
@@ -211,25 +213,25 @@ export function CustomerDetailView({
         <Card className="rounded-card border shadow-sm md:col-span-2">
           <CardHeader className="pb-2">
             <CardTitle className="text-xs font-semibold uppercase text-muted-foreground">
-              Contact & Profile Details
+              {t.customers?.customerName || "Contact & Profile Details"}
             </CardTitle>
           </CardHeader>
           <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
             <div className="flex items-center gap-2 text-muted-foreground">
               <Phone className="h-4 w-4 shrink-0" />
-              <span>{customer.phone || "No phone on file"}</span>
+              <span>{customer.phone || "—"}</span>
             </div>
             <div className="flex items-center gap-2 text-muted-foreground">
               <Mail className="h-4 w-4 shrink-0" />
-              <span>{customer.email || "No email on file"}</span>
+              <span>{customer.email || "—"}</span>
             </div>
             <div className="flex items-center gap-2 text-muted-foreground sm:col-span-2">
               <MapPin className="h-4 w-4 shrink-0" />
-              <span>{customer.address || "No address on file"}</span>
+              <span>{customer.address || "—"}</span>
             </div>
             {customer.notes && (
               <div className="sm:col-span-2 pt-1 border-t text-muted-foreground">
-                <span className="font-semibold text-foreground">Notes: </span>
+                <span className="font-semibold text-foreground">{t.common?.notes || "Notes"}: </span>
                 {customer.notes}
               </div>
             )}
@@ -243,7 +245,7 @@ export function CustomerDetailView({
           <div>
             <CardTitle className="text-base font-semibold flex items-center gap-2">
               <FileText className="h-4 w-4 text-primary" />
-              Account Statement & Chronological Ledger
+              {t.reports?.salesSummary || "Account Statement & Chronological Ledger"}
             </CardTitle>
             <CardDescription className="text-xs">
               Complete historical ledger of invoices issued, debt repayments recorded, and running balance
@@ -255,20 +257,20 @@ export function CustomerDetailView({
             <table className="w-full text-sm">
               <thead className="border-b text-xs uppercase text-muted-foreground font-medium bg-muted/30">
                 <tr>
-                  <th className="py-2.5 px-4 text-left font-medium">Date</th>
-                  <th className="py-2.5 px-4 text-left font-medium">Type</th>
-                  <th className="py-2.5 px-4 text-left font-medium">Reference</th>
-                  <th className="py-2.5 px-4 text-left font-medium">Description</th>
-                  <th className="py-2.5 px-4 text-right font-medium">Debit (Charges)</th>
-                  <th className="py-2.5 px-4 text-right font-medium">Credit (Payments)</th>
-                  <th className="py-2.5 px-4 text-right font-medium">Running Balance</th>
+                  <th className="py-2.5 px-4 text-left font-medium">{t.common?.date || "Date"}</th>
+                  <th className="py-2.5 px-4 text-left font-medium">{t.stock?.type || "Type"}</th>
+                  <th className="py-2.5 px-4 text-left font-medium">{t.stock?.reasonRef || "Reference"}</th>
+                  <th className="py-2.5 px-4 text-left font-medium">{t.products?.description || "Description"}</th>
+                  <th className="py-2.5 px-4 text-right font-medium">{t.customers?.debit || "Debit"}</th>
+                  <th className="py-2.5 px-4 text-right font-medium">{t.customers?.credit || "Credit"}</th>
+                  <th className="py-2.5 px-4 text-right font-medium">{t.customers?.balance || "Running Balance"}</th>
                 </tr>
               </thead>
               <tbody className="divide-y">
                 {statementEntries.length === 0 ? (
                   <tr>
                     <td colSpan={7} className="py-12 text-center text-muted-foreground text-xs">
-                      No transactions recorded for this customer yet
+                      {t.common?.noData || "No transactions recorded for this customer yet"}
                     </td>
                   </tr>
                 ) : (
@@ -337,17 +339,17 @@ export function CustomerDetailView({
         <DialogContent>
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-emerald-600">
-              <CreditCard className="h-5 w-5" /> Record Debt Repayment
+              <CreditCard className="h-5 w-5" /> {t.debts?.recordPayment || "Record Debt Repayment"}
             </DialogTitle>
           </DialogHeader>
           <form onSubmit={handleRecordPayment} className="space-y-4">
             <div className="p-3 bg-muted/40 rounded-lg text-xs space-y-1">
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Customer:</span>
+                <span className="text-muted-foreground">{t.debts?.customerName || "Customer"}:</span>
                 <span className="font-semibold">{customer.name}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Total Balance Owed:</span>
+                <span className="text-muted-foreground">{t.debts?.totalOwed || "Total Balance Owed"}:</span>
                 <span className="font-bold text-rose-600 tabular-nums">
                   {formatCurrency(currentBalance, currency)}
                 </span>
@@ -355,7 +357,7 @@ export function CustomerDetailView({
             </div>
 
             <div className="space-y-1.5">
-              <Label htmlFor="custPayAmt">Payment Amount Received *</Label>
+              <Label htmlFor="custPayAmt">{t.debts?.paymentAmount || "Payment Amount Received"} *</Label>
               <Input
                 id="custPayAmt"
                 type="number"
@@ -368,30 +370,30 @@ export function CustomerDetailView({
                 required
               />
               <p className="text-[11px] text-muted-foreground">
-                Payment is allocated to the oldest unpaid invoices first (FIFO).
+                {t.debts?.fifoNotice || "Payment is allocated to the oldest unpaid invoices first (FIFO)."}
               </p>
             </div>
 
             <div className="space-y-1.5">
-              <Label>Payment Method *</Label>
+              <Label>{t.pos?.paymentMethod || "Payment Method"} *</Label>
               <select
                 value={pmtMethod}
                 onChange={(e) => setPmtMethod(e.target.value)}
                 className="w-full h-9 rounded-md border border-input bg-background px-3 py-1 text-sm"
               >
-                <option value="cash">Cash</option>
-                <option value="card">Card / POS</option>
-                <option value="bank_transfer">Bank Transfer</option>
-                <option value="mobile_money">Mobile Money</option>
-                <option value="other">Other</option>
+                <option value="cash">{t.pos?.cash || "Cash"}</option>
+                <option value="card">{t.pos?.card || "Card / POS"}</option>
+                <option value="bank_transfer">{t.pos?.bankTransfer || "Bank Transfer"}</option>
+                <option value="mobile_money">{t.pos?.mobileMoney || "Mobile Money"}</option>
+                <option value="other">{t.common?.optional || "Other"}</option>
               </select>
             </div>
 
             <div className="space-y-1.5">
-              <Label htmlFor="custPayNote">Reference / Note (Optional)</Label>
+              <Label htmlFor="custPayNote">{t.common?.notes || "Reference / Note"} ({t.common?.optional || "Optional"})</Label>
               <Input
                 id="custPayNote"
-                placeholder="e.g. Bank slip #98124 / cash receipt"
+                placeholder={t.debts?.repaymentMemoPlaceholder || "e.g. Bank slip #98124 / cash receipt"}
                 value={pmtNote}
                 onChange={(e) => setPmtNote(e.target.value)}
               />
@@ -404,11 +406,11 @@ export function CustomerDetailView({
                 onClick={() => setPayOpen(false)}
                 disabled={isPaying}
               >
-                Cancel
+                {t.common?.cancel || "Cancel"}
               </Button>
               <Button type="submit" disabled={isPaying || !pmtAmount}>
                 {isPaying && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-                Confirm Payment
+                {t.debts?.confirmRepayment || t.common?.confirm || "Confirm Payment"}
               </Button>
             </DialogFooter>
           </form>
@@ -419,7 +421,7 @@ export function CustomerDetailView({
       <Dialog open={editOpen} onOpenChange={setEditOpen}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Edit Customer Account</DialogTitle>
+            <DialogTitle>{t.common?.edit || "Edit Customer Account"}</DialogTitle>
           </DialogHeader>
           <form onSubmit={handleUpdateCustomer} className="space-y-4">
             <div className="space-y-1.5">
@@ -434,7 +436,7 @@ export function CustomerDetailView({
 
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <Label htmlFor="ePhone">Phone</Label>
+                <Label htmlFor="ePhone">{t.customers?.phone || "Phone"}</Label>
                 <Input
                   id="ePhone"
                   value={phone}
@@ -442,7 +444,7 @@ export function CustomerDetailView({
                 />
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="eEmail">Email</Label>
+                <Label htmlFor="eEmail">{t.customers?.email || "Email"}</Label>
                 <Input
                   id="eEmail"
                   value={email}
@@ -452,7 +454,7 @@ export function CustomerDetailView({
             </div>
 
             <div className="space-y-1.5">
-              <Label htmlFor="eAddress">Address</Label>
+              <Label htmlFor="eAddress">{t.customers?.address || "Address"}</Label>
               <Input
                 id="eAddress"
                 value={address}
@@ -461,20 +463,20 @@ export function CustomerDetailView({
             </div>
 
             <div className="space-y-1.5">
-              <Label htmlFor="eCredit">Credit Limit ({currency})</Label>
+              <Label htmlFor="eCredit">{t.customers?.creditLimit || "Credit Limit"} ({currency})</Label>
               <Input
                 id="eCredit"
                 type="number"
                 step="0.01"
                 min={0}
-                placeholder="Leave blank for unlimited"
+                placeholder={t.common?.optional || "Optional"}
                 value={creditLimit}
                 onChange={(e) => setCreditLimit(e.target.value)}
               />
             </div>
 
             <div className="space-y-1.5">
-              <Label htmlFor="eNotes">Notes</Label>
+              <Label htmlFor="eNotes">{t.common?.notes || "Notes"}</Label>
               <Textarea
                 id="eNotes"
                 value={notes}
@@ -490,11 +492,11 @@ export function CustomerDetailView({
                 onClick={() => setEditOpen(false)}
                 disabled={isEditing}
               >
-                Cancel
+                {t.common?.cancel || "Cancel"}
               </Button>
               <Button type="submit" disabled={isEditing}>
                 {isEditing && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-                Save Changes
+                {t.common?.save || "Save Changes"}
               </Button>
             </DialogFooter>
           </form>

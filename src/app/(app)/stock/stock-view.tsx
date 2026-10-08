@@ -19,6 +19,7 @@ import {
 import { formatCurrency, formatQuantity } from "@/lib/money";
 import { formatDate } from "@/lib/format";
 import { toast } from "sonner";
+import { useTranslation } from "@/lib/i18n/context";
 import {
   Download,
   Plus,
@@ -56,6 +57,7 @@ export function StockView({
   selectedType,
 }: StockViewProps) {
   const router = useRouter();
+  const { t } = useTranslation();
 
   // Receive stock dialog state
   const [receiveOpen, setReceiveOpen] = React.useState(false);
@@ -171,9 +173,9 @@ export function StockView({
       {/* Top Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Stock Ledger</h1>
+          <h1 className="text-2xl font-bold tracking-tight">{t.stock?.title || "Stock Ledger"}</h1>
           <p className="text-sm text-muted-foreground">
-            Immutable movement history, incoming inventory purchases, and recount adjustments
+            {t.stock?.subtitle || "Immutable movement history, incoming inventory purchases, and recount adjustments"}
           </p>
         </div>
 
@@ -181,19 +183,19 @@ export function StockView({
           <a href="/api/export/movements" download>
             <Button variant="outline" size="sm">
               <Download className="w-4 h-4 mr-2" />
-              Export CSV
+              {t.reports?.exportCsv || t.common?.export || "Export CSV"}
             </Button>
           </a>
           {canAdjust && (
             <Button variant="secondary" size="sm" onClick={() => setAdjustOpen(true)}>
               <SlidersHorizontal className="w-4 h-4 mr-2" />
-              Adjust Stock
+              {t.stock?.adjustStock || "Adjust Stock"}
             </Button>
           )}
           {canReceive && (
             <Button size="sm" onClick={handleOpenReceive}>
               <ArrowDownToLine className="w-4 h-4 mr-2" />
-              Receive Stock
+              {t.stock?.receiveStock || "Receive Stock"}
             </Button>
           )}
         </div>
@@ -202,7 +204,7 @@ export function StockView({
       {/* Movement Filter */}
       <div className="flex items-center gap-3">
         <span className="text-xs font-semibold text-muted-foreground uppercase">
-          Filter Type:
+          {t.stock?.type || t.common?.filter || "Movement Type"}:
         </span>
         <select
           value={selectedType}
@@ -212,13 +214,13 @@ export function StockView({
           }}
           className="h-8 rounded-md border text-xs bg-background px-2"
         >
-          <option value="all">All Movements</option>
-          <option value="purchase">Purchase (Received)</option>
-          <option value="sale">Sale</option>
-          <option value="sale_void">Sale Return (Void)</option>
-          <option value="adjustment_in">Adjustment In</option>
-          <option value="adjustment_out">Adjustment Out</option>
-          <option value="opening">Opening Stock</option>
+          <option value="all">{t.stock?.allMovements || "All Movements"}</option>
+          <option value="purchase">{t.stock?.inbound || "Purchase (Received)"}</option>
+          <option value="sale">{t.nav?.sales || "Sale"}</option>
+          <option value="sale_void">{t.stock?.voidReversals || "Sale Return (Void)"}</option>
+          <option value="adjustment_in">{t.stock?.adjustments || "Adjustment In"}</option>
+          <option value="adjustment_out">{t.stock?.adjustments || "Adjustment Out"}</option>
+          <option value="opening">{t.products?.initialStock || "Opening Stock"}</option>
         </select>
       </div>
 
@@ -228,23 +230,23 @@ export function StockView({
           <table className="w-full text-sm">
             <thead className="bg-muted/50 border-b text-xs uppercase text-muted-foreground">
               <tr>
-                <th className="py-3 px-4 text-left font-medium">Product</th>
-                <th className="py-3 px-4 text-left font-medium">SKU</th>
-                <th className="py-3 px-4 text-left font-medium">Type</th>
-                <th className="py-3 px-4 text-right font-medium">Qty Change</th>
-                <th className="py-3 px-4 text-right font-medium">Stock After</th>
+                <th className="py-3 px-4 text-left font-medium">{t.products?.productName || "Product"}</th>
+                <th className="py-3 px-4 text-left font-medium">{t.products?.sku || "SKU"}</th>
+                <th className="py-3 px-4 text-left font-medium">{t.stock?.type || "Type"}</th>
+                <th className="py-3 px-4 text-right font-medium">{t.stock?.qtyChange || "Qty Change"}</th>
+                <th className="py-3 px-4 text-right font-medium">{t.stock?.qtyAfter || "Stock After"}</th>
                 {canViewCost && (
-                  <th className="py-3 px-4 text-right font-medium">Unit Cost</th>
+                  <th className="py-3 px-4 text-right font-medium">{t.stock?.costPerUnit || t.products?.costPrice || "Unit Cost"}</th>
                 )}
-                <th className="py-3 px-4 text-left font-medium">Reason / Supplier</th>
-                <th className="py-3 px-4 text-right font-medium">Timestamp</th>
+                <th className="py-3 px-4 text-left font-medium">{t.stock?.reasonRef || "Reason / Supplier"}</th>
+                <th className="py-3 px-4 text-right font-medium">{t.common?.date || "Timestamp"}</th>
               </tr>
             </thead>
             <tbody className="divide-y">
               {movements.length === 0 ? (
                 <tr>
                   <td colSpan={canViewCost ? 8 : 7} className="py-12 text-center text-muted-foreground">
-                    No stock movements recorded
+                    {t.common?.noData || "No stock movements recorded"}
                   </td>
                 </tr>
               ) : (
@@ -308,20 +310,20 @@ export function StockView({
         {totalPages > 1 && (
           <div className="flex items-center justify-between px-4 py-3 border-t bg-muted/20 text-xs text-muted-foreground">
             <div>
-              Showing page {currentPage} of {totalPages} ({total} total movements)
+              {t.common?.showingPage || "Showing page"} {currentPage} {t.common?.of || "of"} {totalPages} ({total} {t.common?.totalRecords || "total movements"})
             </div>
             <div className="flex gap-1">
               {currentPage > 1 && (
                 <Link href={`/stock?page=${currentPage - 1}&type=${selectedType}`}>
                   <Button variant="outline" size="sm" className="h-7 text-xs">
-                    Previous
+                    {t.common?.previous || "Previous"}
                   </Button>
                 </Link>
               )}
               {currentPage < totalPages && (
                 <Link href={`/stock?page=${currentPage + 1}&type=${selectedType}`}>
                   <Button variant="outline" size="sm" className="h-7 text-xs">
-                    Next
+                    {t.common?.next || "Next"}
                   </Button>
                 </Link>
               )}
@@ -335,22 +337,22 @@ export function StockView({
         <DialogContent className="max-w-2xl">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <ArrowDownToLine className="h-5 w-5 text-primary" /> Receive Stock
+              <ArrowDownToLine className="h-5 w-5 text-primary" /> {t.stock?.receiveDialogTitle || "Receive Stock"}
             </DialogTitle>
           </DialogHeader>
           <form onSubmit={handleReceiveStock} className="space-y-4">
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <Label htmlFor="recSupp">Supplier Name (Optional)</Label>
+                <Label htmlFor="recSupp">{t.stock?.supplierOptional || "Supplier Name (Optional)"}</Label>
                 <Input
                   id="recSupp"
-                  placeholder="e.g. Apex Global Trading"
+                  placeholder={t.stock?.supplierPlaceholder || "e.g. Apex Global Trading"}
                   value={receiveSupplier}
                   onChange={(e) => setReceiveSupplier(e.target.value)}
                 />
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="recNote">Invoice / Batch Reference</Label>
+                <Label htmlFor="recNote">{t.stock?.reasonRef || "Invoice / Batch Reference"}</Label>
                 <Input
                   id="recNote"
                   placeholder="e.g. PO-9821"
@@ -364,7 +366,7 @@ export function StockView({
             <div className="border rounded-xl p-3 space-y-3 bg-muted/10">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-semibold uppercase text-muted-foreground">
-                  Products to Receive
+                  {t.stock?.receiveDialogDesc || "Products to Receive"}
                 </span>
                 <Button
                   type="button"
@@ -373,7 +375,7 @@ export function StockView({
                   onClick={addReceiveRow}
                   className="h-7 text-xs"
                 >
-                  <Plus className="h-3.5 w-3.5 mr-1" /> Add Product
+                  <Plus className="h-3.5 w-3.5 mr-1" /> {t.stock?.addProductLine || "Add Product"}
                 </Button>
               </div>
 
@@ -408,7 +410,7 @@ export function StockView({
                         type="number"
                         min="0.001"
                         step="0.001"
-                        placeholder="Qty"
+                        placeholder={t.stock?.qty || "Qty"}
                         value={item.quantity}
                         onChange={(e) => {
                           const updated = [...receiveItems];
@@ -425,7 +427,7 @@ export function StockView({
                         type="number"
                         min="0"
                         step="0.01"
-                        placeholder="Cost"
+                        placeholder={t.stock?.costPerUnit || "Cost"}
                         value={item.unitCost ?? ""}
                         onChange={(e) => {
                           const updated = [...receiveItems];
@@ -446,7 +448,7 @@ export function StockView({
                         }}
                       />
                       <span className="text-[10px] text-muted-foreground leading-tight">
-                        Update Cost
+                        {t.stock?.updateCost || "Update Cost"}
                       </span>
                     </div>
 
@@ -473,11 +475,11 @@ export function StockView({
                 onClick={() => setReceiveOpen(false)}
                 disabled={isReceiving}
               >
-                Cancel
+                {t.common?.cancel || "Cancel"}
               </Button>
               <Button type="submit" disabled={isReceiving || receiveItems.length === 0}>
                 {isReceiving && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-                Confirm Stock Receipt
+                {t.stock?.receiveStock || t.common?.confirm || "Confirm Stock Receipt"}
               </Button>
             </DialogFooter>
           </form>
@@ -490,12 +492,12 @@ export function StockView({
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <SlidersHorizontal className="h-5 w-5 text-violet-600" />
-              Adjust Stock Level
+              {t.stock?.adjustDialogTitle || "Adjust Stock Level"}
             </DialogTitle>
           </DialogHeader>
           <form onSubmit={handleAdjustStock} className="space-y-4">
             <div className="space-y-1.5">
-              <Label>Select Product *</Label>
+              <Label>{t.stock?.selectProduct || "Select Product"} *</Label>
               <select
                 value={adjProductId}
                 onChange={(e) => setAdjProductId(e.target.value)}
@@ -511,7 +513,7 @@ export function StockView({
 
             <div className="space-y-1.5">
               <Label htmlFor="stkAdjQty">
-                Quantity Change (+ to add, - to deduct) *
+                {t.stock?.qtyChangeHelp || "Quantity Change (+ to add, - to deduct)"} *
               </Label>
               <Input
                 id="stkAdjQty"
@@ -526,10 +528,10 @@ export function StockView({
             </div>
 
             <div className="space-y-1.5">
-              <Label htmlFor="stkAdjReason">Reason (Mandatory) *</Label>
+              <Label htmlFor="stkAdjReason">{t.stock?.reasonRequired || "Reason (Mandatory)"} *</Label>
               <Textarea
                 id="stkAdjReason"
-                placeholder="e.g. Shrinkage / Damaged packaging / Recount adjustment"
+                placeholder={t.stock?.reasonPlaceholder || "e.g. Shrinkage / Damaged packaging / Recount adjustment"}
                 value={adjReason}
                 onChange={(e) => setAdjReason(e.target.value)}
                 required
@@ -543,11 +545,11 @@ export function StockView({
                 onClick={() => setAdjustOpen(false)}
                 disabled={isAdjusting}
               >
-                Cancel
+                {t.common?.cancel || "Cancel"}
               </Button>
               <Button type="submit" disabled={isAdjusting || !adjQty || !adjReason}>
                 {isAdjusting && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-                Save Adjustment
+                {t.stock?.confirmAdjustment || "Save Adjustment"}
               </Button>
             </DialogFooter>
           </form>

@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { Plus, Trash2, Edit, Loader2 } from "lucide-react";
+import { useTranslation } from "@/lib/i18n/context";
 
 export function CatalogView({
   categories,
@@ -32,6 +33,7 @@ export function CatalogView({
   units: any[];
 }) {
   const router = useRouter();
+  const { t } = useTranslation();
 
   // Category state
   const [catName, setCatName] = React.useState("");
@@ -61,7 +63,7 @@ export function CatalogView({
         toast.error(res.error || "Failed to create category");
         return;
       }
-      toast.success("Category created");
+      toast.success(t.catalog.categoryCreated);
       setCatName("");
       router.refresh();
     } catch (err: any) {
@@ -82,7 +84,7 @@ export function CatalogView({
         toast.error(res.error || "Update failed");
         return;
       }
-      toast.success("Category updated");
+      toast.success(t.catalog.categoryUpdated);
       setEditCat(null);
       router.refresh();
     } catch (err: any) {
@@ -93,14 +95,14 @@ export function CatalogView({
   };
 
   const handleDeleteCat = async (id: string, name: string) => {
-    if (!confirm(`Delete category "${name}"?`)) return;
+    if (!confirm(`${t.catalog.confirmDeleteCategory} "${name}"?`)) return;
     try {
       const res = await deleteCategoryAction(id);
       if (!res.success) {
         toast.error(res.error || "Cannot delete category in use");
         return;
       }
-      toast.success("Category deleted");
+      toast.success(t.catalog.categoryDeleted);
       router.refresh();
     } catch (err: any) {
       toast.error(err.message);
@@ -119,7 +121,7 @@ export function CatalogView({
         toast.error(res.error || "Failed to create unit");
         return;
       }
-      toast.success("Unit created");
+      toast.success(t.catalog.unitCreated);
       setUnitName("");
       setUnitShortName("");
       router.refresh();
@@ -145,7 +147,7 @@ export function CatalogView({
         toast.error(res.error || "Update failed");
         return;
       }
-      toast.success("Unit updated");
+      toast.success(t.catalog.unitUpdated);
       setEditUnit(null);
       router.refresh();
     } catch (err: any) {
@@ -156,14 +158,14 @@ export function CatalogView({
   };
 
   const handleDeleteUnit = async (id: string, name: string) => {
-    if (!confirm(`Delete unit "${name}"?`)) return;
+    if (!confirm(`${t.catalog.confirmDeleteUnit} "${name}"?`)) return;
     try {
       const res = await deleteUnitAction(id);
       if (!res.success) {
         toast.error(res.error || "Cannot delete unit in use");
         return;
       }
-      toast.success("Unit deleted");
+      toast.success(t.catalog.unitDeleted);
       router.refresh();
     } catch (err: any) {
       toast.error(err.message);
@@ -173,9 +175,9 @@ export function CatalogView({
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">Catalog Setup</h1>
+        <h1 className="text-2xl font-bold tracking-tight">{t.catalog.title}</h1>
         <p className="text-sm text-muted-foreground">
-          Configure product categories and standard units of measurement
+          {t.catalog.subtitle}
         </p>
       </div>
 
@@ -183,22 +185,22 @@ export function CatalogView({
         {/* Categories Card */}
         <Card className="rounded-card border shadow-sm">
           <CardHeader>
-            <CardTitle className="text-base font-semibold">Categories</CardTitle>
+            <CardTitle className="text-base font-semibold">{t.catalog.categories}</CardTitle>
             <CardDescription className="text-xs">
-              Group inventory items for filtered searching and reporting
+              {t.catalog.categoriesDesc}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <form onSubmit={handleAddCat} className="flex gap-2">
               <Input
-                placeholder="New category name..."
+                placeholder={t.catalog.newCategoryPlaceholder}
                 value={catName}
                 onChange={(e) => setCatName(e.target.value)}
                 className="h-9 text-sm"
               />
               <Button type="submit" size="sm" disabled={isAddingCat || !catName.trim()}>
                 {isAddingCat && <Loader2 className="w-3.5 h-3.5 mr-1 animate-spin" />}
-                Add
+                {t.catalog.addCategory}
               </Button>
             </form>
 
@@ -239,21 +241,21 @@ export function CatalogView({
         {/* Units Card */}
         <Card className="rounded-card border shadow-sm">
           <CardHeader>
-            <CardTitle className="text-base font-semibold">Units of Measure</CardTitle>
+            <CardTitle className="text-base font-semibold">{t.catalog.units}</CardTitle>
             <CardDescription className="text-xs">
-              Quantities and short labels (e.g. Pieces / pcs, Kilogram / kg)
+              {t.catalog.unitsDesc}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <form onSubmit={handleAddUnit} className="flex gap-2">
               <Input
-                placeholder="Name (e.g. Box)"
+                placeholder={t.catalog.unitNamePlaceholder}
                 value={unitName}
                 onChange={(e) => setUnitName(e.target.value)}
                 className="h-9 text-sm flex-1"
               />
               <Input
-                placeholder="Code (box)"
+                placeholder={t.catalog.unitShortPlaceholder}
                 value={unitShortName}
                 onChange={(e) => setUnitShortName(e.target.value)}
                 className="h-9 text-sm w-24"
@@ -264,7 +266,7 @@ export function CatalogView({
                 disabled={isAddingUnit || !unitName.trim() || !unitShortName.trim()}
               >
                 {isAddingUnit && <Loader2 className="w-3.5 h-3.5 mr-1 animate-spin" />}
-                Add
+                {t.catalog.addUnit}
               </Button>
             </form>
 
@@ -313,11 +315,11 @@ export function CatalogView({
       <Dialog open={!!editCat} onOpenChange={() => setEditCat(null)}>
         <DialogContent className="max-w-sm">
           <DialogHeader>
-            <DialogTitle>Edit Category</DialogTitle>
+            <DialogTitle>{t.catalog.editCategory}</DialogTitle>
           </DialogHeader>
           <form onSubmit={handleUpdateCat} className="space-y-4">
             <div className="space-y-1.5">
-              <Label>Category Name</Label>
+              <Label>{t.catalog.categoryName}</Label>
               <Input
                 value={editCatName}
                 onChange={(e) => setEditCatName(e.target.value)}
@@ -327,11 +329,11 @@ export function CatalogView({
             </div>
             <DialogFooter>
               <Button type="button" variant="outline" onClick={() => setEditCat(null)}>
-                Cancel
+                {t.common.cancel}
               </Button>
               <Button type="submit" disabled={isEditingCat}>
                 {isEditingCat && <Loader2 className="w-3.5 h-3.5 mr-1 animate-spin" />}
-                Save
+                {t.common.save}
               </Button>
             </DialogFooter>
           </form>
@@ -342,11 +344,11 @@ export function CatalogView({
       <Dialog open={!!editUnit} onOpenChange={() => setEditUnit(null)}>
         <DialogContent className="max-w-sm">
           <DialogHeader>
-            <DialogTitle>Edit Unit</DialogTitle>
+            <DialogTitle>{t.catalog.editUnit}</DialogTitle>
           </DialogHeader>
           <form onSubmit={handleUpdateUnit} className="space-y-4">
             <div className="space-y-1.5">
-              <Label>Unit Name</Label>
+              <Label>{t.catalog.unitName}</Label>
               <Input
                 value={editUnitName}
                 onChange={(e) => setEditUnitName(e.target.value)}
@@ -354,7 +356,7 @@ export function CatalogView({
               />
             </div>
             <div className="space-y-1.5">
-              <Label>Short Code</Label>
+              <Label>{t.catalog.unitSymbol}</Label>
               <Input
                 value={editUnitShort}
                 onChange={(e) => setEditUnitShort(e.target.value)}
@@ -363,11 +365,11 @@ export function CatalogView({
             </div>
             <DialogFooter>
               <Button type="button" variant="outline" onClick={() => setEditUnit(null)}>
-                Cancel
+                {t.common.cancel}
               </Button>
               <Button type="submit" disabled={isEditingUnit}>
                 {isEditingUnit && <Loader2 className="w-3.5 h-3.5 mr-1 animate-spin" />}
-                Save
+                {t.common.save}
               </Button>
             </DialogFooter>
           </form>

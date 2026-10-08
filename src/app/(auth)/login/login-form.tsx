@@ -8,9 +8,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { Loader2, Lock, Mail } from "lucide-react";
+import { useTranslation } from "@/lib/i18n/context";
 
 export function LoginForm() {
   const router = useRouter();
+  const { t } = useTranslation();
   const [email, setEmail] = React.useState("");
   const [password, setPassword] = React.useState("");
   const [loading, setLoading] = React.useState(false);
@@ -18,7 +20,7 @@ export function LoginForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email || !password) {
-      toast.error("Please fill in both email and password");
+      toast.error(t.auth.fillBoth);
       return;
     }
 
@@ -31,7 +33,7 @@ export function LoginForm() {
         return;
       }
 
-      toast.success("Signed in successfully");
+      toast.success(t.auth.signedIn);
       if (res.mustChangePassword) {
         router.push("/profile?changePassword=true");
       } else {
@@ -47,7 +49,7 @@ export function LoginForm() {
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="space-y-2">
-        <Label htmlFor="email">Email</Label>
+        <Label htmlFor="email">{t.auth.email}</Label>
         <div className="relative">
           <Mail className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
@@ -64,7 +66,7 @@ export function LoginForm() {
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="password">Password</Label>
+        <Label htmlFor="password">{t.auth.password}</Label>
         <div className="relative">
           <Lock className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
@@ -81,7 +83,7 @@ export function LoginForm() {
 
       <Button type="submit" disabled={loading} className="w-full">
         {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-        Sign In
+        {t.auth.signIn}
       </Button>
     </form>
   );

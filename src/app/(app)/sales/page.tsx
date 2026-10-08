@@ -80,7 +80,7 @@ export default async function SalesPage({
             defaultValue={sp.payment || "all"}
             className="h-9 rounded-md border border-input bg-background px-3 py-1 text-xs"
           >
-            <option value="all">{t.common?.all || "All Payment Statuses"}</option>
+            <option value="all">{t.sales?.allPaymentStatuses || t.common?.all || "All Payment Statuses"}</option>
             <option value="paid">{t.sales?.paid || "Paid"}</option>
             <option value="partial">{t.sales?.partial || "Partial (Debt)"}</option>
             <option value="unpaid">{t.sales?.unpaid || "Unpaid / Credit"}</option>
@@ -92,8 +92,8 @@ export default async function SalesPage({
             className="h-9 rounded-md border border-input bg-background px-3 py-1 text-xs"
           >
             <option value="all">{t.sales?.allSales || "All Invoices"}</option>
-            <option value="completed">Completed</option>
-            <option value="voided">Voided</option>
+            <option value="completed">{t.sales?.completed || "Completed"}</option>
+            <option value="voided">{t.sales?.voided || "Voided"}</option>
           </select>
         </div>
       </div>
@@ -188,20 +188,20 @@ export default async function SalesPage({
         {totalPages > 1 && (
           <div className="flex items-center justify-between px-4 py-3 border-t bg-muted/20 text-xs text-muted-foreground">
             <div>
-              Showing page {page} of {totalPages} ({total} total transactions)
+              {t.common?.showingPage || "Showing page"} {page} {t.common?.of || "of"} {totalPages} ({total} {t.common?.totalRecords || "total transactions"})
             </div>
             <div className="flex gap-1">
               {page > 1 && (
                 <Link href={`/sales?page=${page - 1}`}>
                   <Button variant="outline" size="sm" className="h-7 text-xs">
-                    Previous
+                    {t.common?.previous || "Previous"}
                   </Button>
                 </Link>
               )}
               {page < totalPages && (
                 <Link href={`/sales?page=${page + 1}`}>
                   <Button variant="outline" size="sm" className="h-7 text-xs">
-                    Next
+                    {t.common?.next || "Next"}
                   </Button>
                 </Link>
               )}

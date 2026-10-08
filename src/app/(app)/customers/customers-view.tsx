@@ -18,6 +18,7 @@ import {
 import { formatCurrency } from "@/lib/money";
 import { formatDate } from "@/lib/format";
 import { toast } from "sonner";
+import { useTranslation } from "@/lib/i18n/context";
 import { Plus, Search, User, Phone, Mail, Loader2, Eye } from "lucide-react";
 
 interface CustomersViewProps {
@@ -40,6 +41,7 @@ export function CustomersView({
   searchQuery,
 }: CustomersViewProps) {
   const router = useRouter();
+  const { t } = useTranslation();
 
   // Create Customer Dialog State
   const [createOpen, setCreateOpen] = React.useState(false);
@@ -103,16 +105,16 @@ export function CustomersView({
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Customers Directory</h1>
+          <h1 className="text-2xl font-bold tracking-tight">{t.customers?.title || "Customers Directory"}</h1>
           <p className="text-sm text-muted-foreground">
-            Customer balances, debt ledgers, and contact information
+            {t.customers?.subtitle || "Customer balances, debt ledgers, and contact information"}
           </p>
         </div>
 
         {canManage && (
           <Button size="sm" onClick={() => setCreateOpen(true)}>
             <Plus className="w-4 h-4 mr-2" />
-            Add Customer
+            {t.customers?.addCustomer || "Add Customer"}
           </Button>
         )}
       </div>
@@ -124,12 +126,12 @@ export function CustomersView({
           <Input
             name="q"
             defaultValue={searchQuery}
-            placeholder="Search by customer name, phone number, or email..."
+            placeholder={t.pos?.searchPlaceholder || "Search by customer name, phone number..."}
             className="pl-9"
           />
         </div>
         <Button type="submit" variant="secondary" size="sm">
-          Search
+          {t.common?.search || "Search"}
         </Button>
       </form>
 
@@ -139,19 +141,19 @@ export function CustomersView({
           <table className="w-full text-sm">
             <thead className="bg-muted/50 border-b text-xs uppercase text-muted-foreground">
               <tr>
-                <th className="py-3 px-4 text-left font-medium">Customer Name</th>
-                <th className="py-3 px-4 text-left font-medium">Contact</th>
-                <th className="py-3 px-4 text-left font-medium">Address</th>
-                <th className="py-3 px-4 text-right font-medium">Credit Limit</th>
-                <th className="py-3 px-4 text-right font-medium">Outstanding Owed</th>
-                <th className="py-3 px-4 text-right font-medium">Actions</th>
+                <th className="py-3 px-4 text-left font-medium">{t.customers?.customerName || t.common?.name || "Customer Name"}</th>
+                <th className="py-3 px-4 text-left font-medium">{t.debts?.phone || t.common?.phone || "Contact"}</th>
+                <th className="py-3 px-4 text-left font-medium">{t.customers?.address || t.common?.address || "Address"}</th>
+                <th className="py-3 px-4 text-right font-medium">{t.customers?.creditLimit || "Credit Limit"}</th>
+                <th className="py-3 px-4 text-right font-medium">{t.debts?.totalOwed || "Outstanding Owed"}</th>
+                <th className="py-3 px-4 text-right font-medium">{t.common?.actions || "Actions"}</th>
               </tr>
             </thead>
             <tbody className="divide-y">
               {customers.length === 0 ? (
                 <tr>
                   <td colSpan={6} className="py-12 text-center text-muted-foreground">
-                    No customers found matching search criteria
+                    {t.common?.noData || "No customers found matching search criteria"}
                   </td>
                 </tr>
               ) : (
@@ -168,7 +170,7 @@ export function CustomersView({
                           <span>{c.name}</span>
                           {c.isWalkIn && (
                             <span className="text-[10px] bg-muted px-1.5 py-0.5 rounded text-muted-foreground">
-                              Walk-in
+                              {t.pos?.walkInCustomer || "Walk-in"}
                             </span>
                           )}
                         </Link>
@@ -192,7 +194,7 @@ export function CustomersView({
                         {c.address || "—"}
                       </td>
                       <td className="py-3 px-4 text-right text-xs tabular-nums text-muted-foreground">
-                        {c.creditLimit ? formatCurrency(c.creditLimit, currency) : "No limit"}
+                        {c.creditLimit ? formatCurrency(c.creditLimit, currency) : "—"}
                       </td>
                       <td
                         className={`py-3 px-4 text-right font-bold tabular-nums ${
@@ -204,7 +206,7 @@ export function CustomersView({
                       <td className="py-3 px-4 text-right">
                         <Link href={`/customers/${c.id}`}>
                           <Button variant="ghost" size="sm" className="h-7 text-xs">
-                            <Eye className="h-3.5 w-3.5 mr-1" /> Ledger
+                            <Eye className="h-3.5 w-3.5 mr-1" /> {t.debts?.paymentHistory || "Ledger"}
                           </Button>
                         </Link>
                       </td>
@@ -220,20 +222,20 @@ export function CustomersView({
         {totalPages > 1 && (
           <div className="flex items-center justify-between px-4 py-3 border-t bg-muted/20 text-xs text-muted-foreground">
             <div>
-              Showing page {currentPage} of {totalPages} ({total} total customers)
+              {currentPage} / {totalPages}
             </div>
             <div className="flex gap-1">
               {currentPage > 1 && (
                 <Link href={`/customers?page=${currentPage - 1}&q=${searchQuery}`}>
                   <Button variant="outline" size="sm" className="h-7 text-xs">
-                    Previous
+                    {t.common?.previous || "Previous"}
                   </Button>
                 </Link>
               )}
               {currentPage < totalPages && (
                 <Link href={`/customers?page=${currentPage + 1}&q=${searchQuery}`}>
                   <Button variant="outline" size="sm" className="h-7 text-xs">
-                    Next
+                    {t.common?.next || "Next"}
                   </Button>
                 </Link>
               )}
@@ -246,11 +248,11 @@ export function CustomersView({
       <Dialog open={createOpen} onOpenChange={setCreateOpen}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Add Customer Account</DialogTitle>
+            <DialogTitle>{t.customers?.addCustomer || "Add Customer Account"}</DialogTitle>
           </DialogHeader>
           <form onSubmit={handleCreateCustomer} className="space-y-4">
             <div className="space-y-1.5">
-              <Label htmlFor="custName">Customer Full Name *</Label>
+              <Label htmlFor="custName">{t.customers?.customerName || "Customer Name"} *</Label>
               <Input
                 id="custName"
                 placeholder="e.g. John Doe / Metro Traders"
@@ -263,7 +265,7 @@ export function CustomersView({
 
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <Label htmlFor="custPhone">Phone Number</Label>
+                <Label htmlFor="custPhone">{t.customers?.phone || "Phone Number"}</Label>
                 <Input
                   id="custPhone"
                   placeholder="+1 555-0102"
@@ -272,7 +274,7 @@ export function CustomersView({
                 />
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="custEmail">Email Address</Label>
+                <Label htmlFor="custEmail">{t.customers?.email || "Email Address"}</Label>
                 <Input
                   id="custEmail"
                   type="email"
@@ -284,7 +286,7 @@ export function CustomersView({
             </div>
 
             <div className="space-y-1.5">
-              <Label htmlFor="custAddr">Physical Address</Label>
+              <Label htmlFor="custAddr">{t.customers?.address || "Physical Address"}</Label>
               <Input
                 id="custAddr"
                 placeholder="Street address / City"
@@ -294,7 +296,7 @@ export function CustomersView({
             </div>
 
             <div className="space-y-1.5">
-              <Label htmlFor="custCredit">Credit Limit ({currency})</Label>
+              <Label htmlFor="custCredit">{t.customers?.creditLimit || "Credit Limit"} ({currency})</Label>
               <Input
                 id="custCredit"
                 type="number"
@@ -307,7 +309,7 @@ export function CustomersView({
             </div>
 
             <div className="space-y-1.5">
-              <Label htmlFor="custNotes">Notes (Optional)</Label>
+              <Label htmlFor="custNotes">{t.common?.notes || "Notes"} ({t.common?.optional || "Optional"})</Label>
               <Textarea
                 id="custNotes"
                 placeholder="Special credit terms, delivery notes, etc."
@@ -324,11 +326,11 @@ export function CustomersView({
                 onClick={() => setCreateOpen(false)}
                 disabled={isSubmitting}
               >
-                Cancel
+                {t.common?.cancel || "Cancel"}
               </Button>
               <Button type="submit" disabled={isSubmitting || !name.trim()}>
                 {isSubmitting && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-                Save Customer
+                {t.common?.save || "Save Customer"}
               </Button>
             </DialogFooter>
           </form>

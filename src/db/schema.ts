@@ -10,6 +10,7 @@ import {
   primaryKey,
   index,
   uniqueIndex,
+  customType,
 } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 
@@ -307,6 +308,33 @@ export const auditLogs = pgTable("audit_logs", {
   ip: text("ip"),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
 });
+
+// Custom Bytea type for binary data in postgres
+export const customBytea = customType<{ data: Buffer; default: false }>({
+  dataType() {
+    return "bytea";
+  },
+  toDriver(val: Buffer): Buffer {
+    return val;
+  },
+  fromDriver(val: unknown): Buffer {
+    if (Buffer.isBuffer(val)) return val;
+    return Buffer.from(val as any);
+  },
+});
+
+// 18. Files
+export const files = pgTable("files", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  name: text("name").notNull(),
+  mimeType: text("mime_type").notNull(),
+  size: integer("size").notNull(),
+  data: customBytea("data").notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+});
+
+export const file = files;
+export const fileTable = files;
 
 // Relations
 export const usersRelations = relations(users, ({ one }) => ({

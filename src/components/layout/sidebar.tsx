@@ -130,32 +130,59 @@ export function Sidebar({ user, companyName, logoUrl, currency }: SidebarProps) 
   return (
     <aside
       className={cn(
-        "sticky top-0 hidden md:flex flex-col border-r bg-card h-screen transition-all duration-300 z-30 select-none",
+        "sticky top-0 self-start shrink-0 h-screen hidden md:flex flex-col border-r bg-card transition-all duration-300 z-30 select-none overflow-hidden",
         collapsed ? "w-16" : "w-64"
       )}
     >
-      {/* Brand Header */}
-      <div className="flex items-center h-16 px-4 border-b gap-3 overflow-hidden">
-        {logoUrl ? (
-          <img
-            src={logoUrl}
-            alt={companyName}
-            className="h-8 w-8 rounded object-contain shrink-0 bg-white border p-0.5"
-          />
-        ) : (
-          <div className="h-8 w-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center font-bold text-sm shrink-0 border border-primary/20">
-            {companyName.slice(0, 2).toUpperCase()}
-          </div>
+      {/* Brand Header with Expand / Collapse Toggle on Top */}
+      <div
+        className={cn(
+          "flex items-center h-16 border-b transition-all overflow-hidden",
+          collapsed ? "justify-center px-1" : "justify-between px-3"
         )}
-        {!collapsed && (
-          <div className="flex flex-col min-w-0">
-            <span className="font-semibold text-sm truncate text-foreground leading-tight">
-              {companyName}
-            </span>
-            <span className="text-[10px] text-muted-foreground font-mono">
-              {currency}
-            </span>
-          </div>
+      >
+        {!collapsed ? (
+          <>
+            <div className="flex items-center gap-2.5 min-w-0">
+              {logoUrl ? (
+                <img
+                  src={logoUrl}
+                  alt={companyName}
+                  className="h-8 w-8 rounded object-contain shrink-0 bg-white border p-0.5"
+                />
+              ) : (
+                <div className="h-8 w-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center font-bold text-sm shrink-0 border border-primary/20">
+                  {companyName.slice(0, 2).toUpperCase()}
+                </div>
+              )}
+              <div className="flex flex-col min-w-0">
+                <span className="font-semibold text-sm truncate text-foreground leading-tight">
+                  {companyName}
+                </span>
+                <span className="text-[10px] text-muted-foreground font-mono">
+                  {currency}
+                </span>
+              </div>
+            </div>
+
+            <button
+              onClick={() => setCollapsed(true)}
+              className="p-1.5 rounded-md text-muted-foreground hover:bg-muted hover:text-foreground transition-colors shrink-0 ml-1"
+              title="Collapse sidebar"
+              aria-label="Collapse sidebar"
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </button>
+          </>
+        ) : (
+          <button
+            onClick={() => setCollapsed(false)}
+            className="p-2 rounded-md text-muted-foreground hover:bg-muted hover:text-foreground transition-colors flex items-center justify-center"
+            title="Expand sidebar"
+            aria-label="Expand sidebar"
+          >
+            <ChevronRight className="h-4 w-4" />
+          </button>
         )}
       </div>
 
@@ -222,17 +249,6 @@ export function Sidebar({ user, companyName, logoUrl, currency }: SidebarProps) 
             })}
           </div>
         )}
-      </div>
-
-      {/* Collapse Toggle Footer */}
-      <div className="p-2 border-t flex justify-end">
-        <button
-          onClick={() => setCollapsed(!collapsed)}
-          className="p-1.5 rounded-md text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
-          title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-        >
-          {collapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
-        </button>
       </div>
     </aside>
   );

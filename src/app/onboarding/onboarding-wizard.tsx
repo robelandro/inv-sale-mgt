@@ -93,8 +93,13 @@ export function OnboardingWizard() {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    if (file.size > 2 * 1024 * 1024) {
-      toast.error("File size cannot exceed 2 MB");
+    if (!file.type || !file.type.startsWith("image/")) {
+      toast.error("Please upload an image file (PNG, JPG, WebP, SVG)");
+      return;
+    }
+
+    if (file.size > 400 * 1024) {
+      toast.error("File size cannot exceed 400 KB");
       return;
     }
 
@@ -326,7 +331,7 @@ export function OnboardingWizard() {
 
             {/* Logo Upload */}
             <div className="sm:col-span-2 space-y-2 border-t pt-3">
-              <Label>Company Logo (Optional, max 2 MB)</Label>
+              <Label>Company Logo (Optional, max 400 KB)</Label>
               <div className="flex items-center gap-4">
                 {logoUrl ? (
                   <div className="relative h-16 w-16 border rounded-lg p-1 bg-white flex items-center justify-center">
@@ -345,7 +350,7 @@ export function OnboardingWizard() {
                   <input
                     type="file"
                     id="logo-upload"
-                    accept="image/png,image/jpeg,image/webp,image/svg+xml"
+                    accept="image/*"
                     className="hidden"
                     onChange={handleLogoUpload}
                   />
@@ -359,7 +364,7 @@ export function OnboardingWizard() {
                     {uploadingLogo && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
                     {logoUrl ? "Replace Logo" : "Upload Logo"}
                   </Button>
-                  <p className="text-xs text-muted-foreground mt-1">PNG, JPG, SVG or WebP</p>
+                  <p className="text-xs text-muted-foreground mt-1">Max 400 KB, image only</p>
                 </div>
               </div>
             </div>

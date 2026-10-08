@@ -109,9 +109,9 @@ export function ReportsView({
 
           <Card className="rounded-card border shadow-sm overflow-hidden">
             <CardHeader>
-              <CardTitle className="text-base font-semibold">{t.reports?.salesSummary || "Daily Gross Profit Breakdown"}</CardTitle>
+              <CardTitle className="text-base font-semibold">{t.reports?.dailyBreakdown || "Daily Gross Profit Breakdown"}</CardTitle>
               <CardDescription className="text-xs">
-                Derived directly from snapshot item cost and sales revenue
+                {t.reports?.dailyBreakdownDesc || "Derived directly from snapshot item cost and sales revenue"}
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -167,42 +167,48 @@ export function ReportsView({
             <Card className="rounded-card border shadow-sm">
               <CardHeader className="pb-2">
                 <CardTitle className="text-xs uppercase text-muted-foreground font-semibold">
-                  {t.reports?.cogs || "Total Asset Cost Value"}
+                  {t.reports?.assetCostValue || "Total Asset Cost Value"}
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold tabular-nums">
                   {formatCurrency(valuationData.summary?.totalCostValue, currency)}
                 </div>
-                <p className="text-xs text-muted-foreground mt-1">Capital invested in current stock</p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {t.reports?.assetCostDesc || "Capital invested in current stock"}
+                </p>
               </CardContent>
             </Card>
 
             <Card className="rounded-card border shadow-sm">
               <CardHeader className="pb-2">
                 <CardTitle className="text-xs uppercase text-muted-foreground font-semibold">
-                  {t.reports?.revenue || "Total Potential Retail Value"}
+                  {t.reports?.retailValue || "Total Potential Retail Value"}
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold tabular-nums text-primary">
                   {formatCurrency(valuationData.summary?.totalRetailValue, currency)}
                 </div>
-                <p className="text-xs text-muted-foreground mt-1">Gross return at active retail prices</p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {t.reports?.retailDesc || "Gross return at active retail prices"}
+                </p>
               </CardContent>
             </Card>
 
             <Card className="rounded-card border shadow-sm">
               <CardHeader className="pb-2">
                 <CardTitle className="text-xs uppercase text-muted-foreground font-semibold">
-                  {t.reports?.grossProfit || "Projected Gross Profit"}
+                  {t.reports?.projectedProfit || "Projected Gross Profit"}
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold tabular-nums text-emerald-600 dark:text-emerald-400">
                   {formatCurrency(valuationData.summary?.potentialProfit, currency)}
                 </div>
-                <p className="text-xs text-muted-foreground mt-1">Net profit after total inventory sell-out</p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {t.reports?.projectedProfitDesc || "Net profit after total inventory sell-out"}
+                </p>
               </CardContent>
             </Card>
           </div>
@@ -219,10 +225,10 @@ export function ReportsView({
                       <th className="py-2.5 px-4 text-left font-medium">{t.products?.productName || "Product"}</th>
                       <th className="py-2.5 px-4 text-left font-medium">{t.products?.sku || "SKU"}</th>
                       <th className="py-2.5 px-4 text-right font-medium">{t.pos?.inStock || "In Stock"}</th>
-                      <th className="py-2.5 px-4 text-right font-medium">{t.products?.costPrice || "Unit Cost"}</th>
-                      <th className="py-2.5 px-4 text-right font-medium">{t.products?.sellingPrice || "Selling Price"}</th>
-                      <th className="py-2.5 px-4 text-right font-medium">{t.reports?.cogs || "Total Cost Value"}</th>
-                      <th className="py-2.5 px-4 text-right font-medium">{t.reports?.revenue || "Total Retail Value"}</th>
+                      <th className="py-2.5 px-4 text-right font-medium">{t.reports?.unitCost || t.products?.costPrice || "Unit Cost"}</th>
+                      <th className="py-2.5 px-4 text-right font-medium">{t.reports?.sellingPrice || t.products?.sellingPrice || "Selling Price"}</th>
+                      <th className="py-2.5 px-4 text-right font-medium">{t.reports?.totalCostValue || t.reports?.cogs || "Total Cost Value"}</th>
+                      <th className="py-2.5 px-4 text-right font-medium">{t.reports?.totalRetailValue || t.reports?.revenue || "Total Retail Value"}</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y">
@@ -256,9 +262,9 @@ export function ReportsView({
         <TabsContent value="aging" className="space-y-4">
           <Card className="rounded-card border shadow-sm overflow-hidden">
             <CardHeader>
-              <CardTitle className="text-base font-semibold">{t.reports?.debtAging || "Receivables Aging Analysis"}</CardTitle>
+              <CardTitle className="text-base font-semibold">{t.reports?.agingAnalysis || t.reports?.debtAging || "Receivables Aging Analysis"}</CardTitle>
               <CardDescription className="text-xs">
-                Classifies outstanding debt across 30, 60, 90, and 90+ day overdue buckets
+                {t.reports?.agingDesc || "Classifies outstanding debt across 30, 60, 90, and 90+ day overdue buckets"}
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -268,10 +274,10 @@ export function ReportsView({
                     <tr>
                       <th className="py-2.5 px-4 text-left font-medium">{t.debts?.customerName || "Customer"}</th>
                       <th className="py-2.5 px-4 text-right font-medium">{t.debts?.totalOwed || "Total Debt"}</th>
-                      <th className="py-2.5 px-4 text-right font-medium">0–30 Days</th>
-                      <th className="py-2.5 px-4 text-right font-medium">31–60 Days</th>
-                      <th className="py-2.5 px-4 text-right font-medium">61–90 Days</th>
-                      <th className="py-2.5 px-4 text-right font-medium text-rose-600">90+ Days</th>
+                      <th className="py-2.5 px-4 text-right font-medium">{t.reports?.days0_30 || "0–30 Days"}</th>
+                      <th className="py-2.5 px-4 text-right font-medium">{t.reports?.days31_60 || "31–60 Days"}</th>
+                      <th className="py-2.5 px-4 text-right font-medium">{t.reports?.days61_90 || "61–90 Days"}</th>
+                      <th className="py-2.5 px-4 text-right font-medium text-rose-600">{t.reports?.days90Plus || "90+ Days"}</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y">

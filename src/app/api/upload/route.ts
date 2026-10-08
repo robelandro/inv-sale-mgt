@@ -1,16 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth";
-import fs from "fs/promises";
-import path from "path";
-import crypto from "crypto";
+import { saveFile } from "@/services/file.service";
 
-const ALLOWED_TYPES = ["image/png", "image/jpeg", "image/webp", "image/svg+xml"];
-const MAX_SIZE = 2 * 1024 * 1024; // 2MB
+// Maximum 400KB and image only as required
+const MAX_SIZE = 400 * 1024; // 400 KB
 
 export async function POST(req: NextRequest) {
   try {
     const user = await getCurrentUser();
-    // Allow upload during onboarding if no user yet, or if authenticated
+    // Allow upload during initial onboarding setup or when authenticated
     const formData = await req.formData();
     const file = formData.get("file") as File | null;
 
@@ -18,16 +16,18 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "No file provided" }, { status: 400 });
     }
 
-    if (!ALLOWED_TYPES.includes(file.type)) {
+    // Image only check
+    if (!file.type || !file.type.startsWith("image/")) {
       return NextResponse.json(
-        { error: "Invalid file type. Allowed: PNG, JPG, WebP, SVG." },
+        { error: "Invalid file type. Only image files (PNG, JPG, WebP, SVG, GIF) are allowed." },
         { status: 400 }
       );
     }
 
+    // Max 400KB check
     if (file.size > MAX_SIZE) {
       return NextResponse.json(
-        { error: "File exceeds 2 MB limit." },
+        { error: "File exceeds 400 KB limit. Maximum allowed size is 400 KB." },
         { status: 400 }
       );
     }
@@ -35,19 +35,19 @@ export async function POST(req: NextRequest) {
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
 
-    const ext = path.extname(file.name) || ".png";
-    const uniqueName = `${crypto.randomUUID()}${ext}`;
-
-    const uploadsDir = path.join(process.cwd(), "public", "uploads");
-    await fs.mkdir(uploadsDir, { recursive: true });
-
-    const filePath = path.join(uploadsDir, uniqueName);
-    await fs.writeFile(filePath, buffer);
+    // Save binary data and metadata directly to PostgreSQL files table
+    const record = await saveFile({
+      name: file.name,
+      mimeType: file.type,
+      size: file.size,
+      data: buffer,
+    });
 
     return NextResponse.json({
-      url: `/uploads/${uniqueName}`,
-      name: file.name,
-      size: file.size,
+      id: record.id,
+      url: `/api/files/${record.id}`,
+      name: record.name,
+      size: record.size,
     });
   } catch (error: any) {
     console.error("Upload error:", error);

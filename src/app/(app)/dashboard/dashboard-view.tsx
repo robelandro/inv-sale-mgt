@@ -18,6 +18,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { formatCurrency } from "@/lib/money";
 import { formatDate, getStatusBadgeVariant } from "@/lib/format";
+import { useTranslation } from "@/lib/i18n/context";
 import {
   ResponsiveContainer,
   AreaChart,
@@ -42,6 +43,7 @@ export function DashboardView({
   period,
 }: DashboardViewProps) {
   const router = useRouter();
+  const { t } = useTranslation();
 
   const handlePeriodChange = (p: string) => {
     router.push(`/dashboard?period=${p}`);
@@ -66,10 +68,10 @@ export function DashboardView({
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-foreground">
-            Business Dashboard
+            {t.dashboard?.title || "Business Dashboard"}
           </h1>
           <p className="text-sm text-muted-foreground">
-            Financial ledger, stock levels, and revenue performance
+            {t.dashboard?.subtitle || "Financial ledger, stock levels, and revenue performance"}
           </p>
         </div>
 
@@ -80,7 +82,7 @@ export function DashboardView({
             onClick={() => handlePeriodChange("today")}
             className="h-8 text-xs font-medium"
           >
-            Today
+            {t.dashboard?.today || "Today"}
           </Button>
           <Button
             size="sm"
@@ -88,7 +90,7 @@ export function DashboardView({
             onClick={() => handlePeriodChange("7d")}
             className="h-8 text-xs font-medium"
           >
-            Last 7 Days
+            {t.dashboard?.last7Days || "Last 7 Days"}
           </Button>
           <Button
             size="sm"
@@ -96,7 +98,7 @@ export function DashboardView({
             onClick={() => handlePeriodChange("30d")}
             className="h-8 text-xs font-medium"
           >
-            Last 30 Days
+            {t.dashboard?.last30Days || "Last 30 Days"}
           </Button>
         </div>
       </div>
@@ -107,7 +109,7 @@ export function DashboardView({
         <Card className="rounded-card border shadow-sm hover:shadow transition-all">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-              Total Sales Volume
+              {t.dashboard?.totalRevenue || "Total Revenue"}
             </CardTitle>
             <ShoppingCart className="h-4 w-4 text-primary" />
           </CardHeader>
@@ -116,7 +118,7 @@ export function DashboardView({
               {formatCurrency(totalSales, companyCurrency)}
             </div>
             <p className="text-xs text-muted-foreground mt-1">
-              <span className="font-semibold text-foreground">{salesCount}</span> sales recorded in this period
+              <span className="font-semibold text-foreground">{salesCount}</span> {t.dashboard?.salesCount || "sales recorded"}
             </p>
           </CardContent>
         </Card>
@@ -125,7 +127,7 @@ export function DashboardView({
         <Card className="rounded-card border shadow-sm hover:shadow transition-all">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-              Cash Collected
+              {t.dashboard?.cashCollected || "Cash Collected"}
             </CardTitle>
             <DollarSign className="h-4 w-4 text-emerald-600" />
           </CardHeader>
@@ -134,7 +136,7 @@ export function DashboardView({
               {formatCurrency(cashCollected, companyCurrency)}
             </div>
             <p className="text-xs text-muted-foreground mt-1">
-              Direct cash & completed debt repayments
+              {t.reports?.cashCollected || "Direct cash & debt repayments"}
             </p>
           </CardContent>
         </Card>
@@ -143,7 +145,7 @@ export function DashboardView({
         <Card className="rounded-card border shadow-sm hover:shadow transition-all">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-              Outstanding Customer Debt
+              {t.dashboard?.activeDebts || "Outstanding Customer Debt"}
             </CardTitle>
             <CreditCard className="h-4 w-4 text-rose-500" />
           </CardHeader>
@@ -155,7 +157,7 @@ export function DashboardView({
               href="/debts"
               className="inline-flex items-center text-xs font-medium text-rose-600 hover:underline mt-1 gap-1"
             >
-              View customer debts <ArrowRight className="h-3 w-3" />
+              {t.debts?.title || "Debts & Credit"} <ArrowRight className="h-3 w-3" />
             </Link>
           </CardContent>
         </Card>
@@ -164,7 +166,7 @@ export function DashboardView({
         <Card className="rounded-card border shadow-sm hover:shadow transition-all">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-              Stock Warnings
+              {t.dashboard?.lowStockAlert || "Stock Warnings"}
             </CardTitle>
             <AlertTriangle className="h-4 w-4 text-amber-500" />
           </CardHeader>
@@ -174,21 +176,21 @@ export function DashboardView({
                 <span className="text-2xl font-bold tabular-nums text-amber-600">
                   {lowStockCount}
                 </span>
-                <span className="text-xs text-muted-foreground ml-1">Low</span>
+                <span className="text-xs text-muted-foreground ml-1">{t.products?.lowStock || "Low"}</span>
               </div>
               <span className="text-muted-foreground">•</span>
               <div>
                 <span className="text-2xl font-bold tabular-nums text-rose-600">
                   {outOfStockCount}
                 </span>
-                <span className="text-xs text-muted-foreground ml-1">Out</span>
+                <span className="text-xs text-muted-foreground ml-1">{t.products?.outOfStock || "Out"}</span>
               </div>
             </div>
             <Link
               href="/products?stock=low"
               className="inline-flex items-center text-xs font-medium text-primary hover:underline mt-1 gap-1"
             >
-              Inspect low stock items <ArrowRight className="h-3 w-3" />
+              {t.products?.title || "Products"} <ArrowRight className="h-3 w-3" />
             </Link>
           </CardContent>
         </Card>
@@ -201,7 +203,7 @@ export function DashboardView({
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
               <div>
                 <span className="text-xs font-medium uppercase text-muted-foreground">
-                  Revenue
+                  {t.reports?.revenue || "Revenue"}
                 </span>
                 <p className="text-xl font-bold tabular-nums mt-0.5">
                   {formatCurrency(grossProfit.revenue, companyCurrency)}
@@ -209,7 +211,7 @@ export function DashboardView({
               </div>
               <div>
                 <span className="text-xs font-medium uppercase text-muted-foreground">
-                  Cost of Goods (COGS)
+                  {t.reports?.cogs || "Cost of Goods (COGS)"}
                 </span>
                 <p className="text-xl font-bold tabular-nums mt-0.5 text-muted-foreground">
                   {formatCurrency(grossProfit.cogs, companyCurrency)}
@@ -217,7 +219,7 @@ export function DashboardView({
               </div>
               <div>
                 <span className="text-xs font-medium uppercase text-muted-foreground">
-                  Gross Profit
+                  {t.reports?.grossProfit || "Gross Profit"}
                 </span>
                 <p className="text-xl font-bold tabular-nums mt-0.5 text-emerald-600 dark:text-emerald-400">
                   {formatCurrency(grossProfit.profit, companyCurrency)}
@@ -225,7 +227,7 @@ export function DashboardView({
               </div>
               <div>
                 <span className="text-xs font-medium uppercase text-muted-foreground">
-                  Profit Margin
+                  {t.reports?.margin || "Profit Margin"}
                 </span>
                 <p className="text-xl font-bold tabular-nums mt-0.5 text-emerald-600 dark:text-emerald-400">
                   {grossProfit.marginPercent}%
@@ -243,9 +245,9 @@ export function DashboardView({
           <CardHeader>
             <div className="flex items-center justify-between">
               <div>
-                <CardTitle className="text-base font-semibold">Sales Trend</CardTitle>
+                <CardTitle className="text-base font-semibold">{t.dashboard?.revenueTrend || "Sales Trend"}</CardTitle>
                 <CardDescription className="text-xs">
-                  Daily revenue trajectory over selected timeframe
+                  {t.dashboard?.revenueTrendDesc || "Daily revenue trajectory over selected timeframe"}
                 </CardDescription>
               </div>
               <TrendingUp className="h-4 w-4 text-primary" />
@@ -285,7 +287,7 @@ export function DashboardView({
                       }}
                       formatter={(val: any) => [
                         formatCurrency(val, companyCurrency),
-                        "Total Sales",
+                        t.common?.total || "Total",
                       ]}
                     />
                     <Area
@@ -302,10 +304,10 @@ export function DashboardView({
             ) : (
               <div className="h-64 flex flex-col items-center justify-center text-center p-6 text-muted-foreground">
                 <ShoppingCart className="h-10 w-10 stroke-1 mb-2 text-muted-foreground/50" />
-                <p className="text-sm font-medium">No sales recorded in this timeframe</p>
+                <p className="text-sm font-medium">{t.dashboard?.noSalesPeriod || "No sales recorded in this timeframe"}</p>
                 <Link href="/sales/new" className="mt-2">
                   <Button size="sm" variant="outline">
-                    Record First Sale
+                    {t.nav?.newSale || "New Sale"}
                   </Button>
                 </Link>
               </div>
@@ -316,9 +318,9 @@ export function DashboardView({
         {/* Top 5 Selling Products (Span 1) */}
         <Card className="rounded-card border shadow-sm">
           <CardHeader>
-            <CardTitle className="text-base font-semibold">Top Products</CardTitle>
+            <CardTitle className="text-base font-semibold">{t.dashboard?.topProducts || "Top Products"}</CardTitle>
             <CardDescription className="text-xs">
-              Highest grossing items in this period
+              {t.dashboard?.topProductsDesc || "Highest grossing items in this period"}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -329,7 +331,7 @@ export function DashboardView({
                     <div className="min-w-0 pr-3">
                       <p className="font-medium truncate text-foreground">{p.name}</p>
                       <p className="text-xs text-muted-foreground font-mono">
-                        {p.sku} • {p.totalQty} sold
+                        {p.sku} • {p.totalQty} {t.dashboard?.salesCount || "sold"}
                       </p>
                     </div>
                     <div className="text-right font-semibold tabular-nums shrink-0">
@@ -340,7 +342,7 @@ export function DashboardView({
               </div>
             ) : (
               <div className="h-48 flex items-center justify-center text-xs text-muted-foreground">
-                No product sales yet
+                {t.dashboard?.noTopProducts || "No product sales yet"}
               </div>
             )}
           </CardContent>
@@ -351,14 +353,14 @@ export function DashboardView({
       <Card className="rounded-card border shadow-sm">
         <CardHeader className="flex flex-row items-center justify-between">
           <div>
-            <CardTitle className="text-base font-semibold">Recent Sales Activity</CardTitle>
+            <CardTitle className="text-base font-semibold">{t.dashboard?.recentSales || "Recent Sales Activity"}</CardTitle>
             <CardDescription className="text-xs">
-              Latest transactions recorded across all registers
+              {t.dashboard?.recentSalesDesc || "Latest transactions recorded across all registers"}
             </CardDescription>
           </div>
           <Link href="/sales">
             <Button variant="outline" size="sm" className="text-xs">
-              View All Sales <ArrowRight className="ml-1 h-3 w-3" />
+              {t.dashboard?.viewAll || "View All"} <ArrowRight className="ml-1 h-3 w-3" />
             </Button>
           </Link>
         </CardHeader>
@@ -368,11 +370,11 @@ export function DashboardView({
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b text-xs uppercase text-muted-foreground font-medium">
-                    <th className="text-left pb-2 font-medium">Invoice</th>
-                    <th className="text-left pb-2 font-medium">Customer</th>
-                    <th className="text-left pb-2 font-medium">Date</th>
-                    <th className="text-left pb-2 font-medium">Status</th>
-                    <th className="text-right pb-2 font-medium">Total</th>
+                    <th className="text-left pb-2 font-medium">{t.sales?.invoiceNo || "Invoice"}</th>
+                    <th className="text-left pb-2 font-medium">{t.sales?.customer || "Customer"}</th>
+                    <th className="text-left pb-2 font-medium">{t.common?.date || "Date"}</th>
+                    <th className="text-left pb-2 font-medium">{t.common?.status || "Status"}</th>
+                    <th className="text-right pb-2 font-medium">{t.common?.total || "Total"}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y">
@@ -407,7 +409,7 @@ export function DashboardView({
             </div>
           ) : (
             <div className="py-8 text-center text-muted-foreground text-sm">
-              No recent sales found
+              {t.common?.noData || "No recent sales found"}
             </div>
           )}
         </CardContent>

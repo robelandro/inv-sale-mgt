@@ -30,6 +30,7 @@ import {
   Loader2,
   Edit,
 } from "lucide-react";
+import { useTranslation } from "@/lib/i18n/context";
 import type { AuthUser } from "@/lib/auth";
 
 interface UsersViewProps {
@@ -40,6 +41,7 @@ interface UsersViewProps {
 
 export function UsersView({ users, roles, currentUser }: UsersViewProps) {
   const router = useRouter();
+  const { t } = useTranslation();
 
   // Create User State
   const [createOpen, setCreateOpen] = React.useState(false);
@@ -87,7 +89,7 @@ export function UsersView({ users, roles, currentUser }: UsersViewProps) {
         return;
       }
 
-      toast.success("User created successfully!");
+      toast.success(t.usersAdmin.userCreated);
       setCreateOpen(false);
 
       if (res.inviteToken) {
@@ -100,7 +102,7 @@ export function UsersView({ users, roles, currentUser }: UsersViewProps) {
         });
       } else if (tempPassword) {
         setResultDialog({
-          title: "Temporary Password Created",
+          title: t.usersAdmin.accountCredentials,
           message:
             "Share this temporary password with the user. They will be forced to change it on their first login:",
           copyValue: tempPassword,
@@ -143,7 +145,7 @@ export function UsersView({ users, roles, currentUser }: UsersViewProps) {
         return;
       }
 
-      toast.success("User updated successfully");
+      toast.success(t.usersAdmin.userUpdated);
       setEditOpen(false);
       router.refresh();
     } catch (err: any) {
@@ -209,15 +211,15 @@ export function UsersView({ users, roles, currentUser }: UsersViewProps) {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Staff & User Management</h1>
+          <h1 className="text-2xl font-bold tracking-tight">{t.usersAdmin.title}</h1>
           <p className="text-sm text-muted-foreground">
-            Manage employee access, assign functional roles, and enforce security policies
+            {t.usersAdmin.subtitle}
           </p>
         </div>
 
         <Button size="sm" onClick={() => setCreateOpen(true)}>
           <UserPlus className="w-4 h-4 mr-2" />
-          Add User
+          {t.usersAdmin.addUser}
         </Button>
       </div>
 
@@ -227,12 +229,12 @@ export function UsersView({ users, roles, currentUser }: UsersViewProps) {
           <table className="w-full text-sm">
             <thead className="bg-muted/50 border-b text-xs uppercase text-muted-foreground font-medium">
               <tr>
-                <th className="py-3 px-4 text-left font-medium">Name</th>
-                <th className="py-3 px-4 text-left font-medium">Email</th>
-                <th className="py-3 px-4 text-left font-medium">Role</th>
-                <th className="py-3 px-4 text-center font-medium">Status</th>
-                <th className="py-3 px-4 text-left font-medium">Last Login</th>
-                <th className="py-3 px-4 text-right font-medium">Actions</th>
+                <th className="py-3 px-4 text-left font-medium">{t.common.name}</th>
+                <th className="py-3 px-4 text-left font-medium">{t.common.email}</th>
+                <th className="py-3 px-4 text-left font-medium">{t.usersAdmin.role}</th>
+                <th className="py-3 px-4 text-center font-medium">{t.common.status}</th>
+                <th className="py-3 px-4 text-left font-medium">{t.usersAdmin.joined}</th>
+                <th className="py-3 px-4 text-right font-medium">{t.common.actions}</th>
               </tr>
             </thead>
             <tbody className="divide-y">
@@ -279,14 +281,14 @@ export function UsersView({ users, roles, currentUser }: UsersViewProps) {
                             onClick={() => handleEdit(u)}
                             className="h-7 text-xs"
                           >
-                            <Edit className="h-3.5 w-3.5 mr-1" /> Edit
+                            <Edit className="h-3.5 w-3.5 mr-1" /> {t.common.edit}
                           </Button>
                           <Button
                             variant="ghost"
                             size="sm"
                             onClick={() => handleResetPassword(u)}
                             className="h-7 text-xs"
-                            title="Reset password"
+                            title={t.usersAdmin.resetPassword}
                           >
                             <Key className="h-3.5 w-3.5" />
                           </Button>
@@ -297,10 +299,10 @@ export function UsersView({ users, roles, currentUser }: UsersViewProps) {
                               onClick={() => handleToggleStatus(u)}
                               className={`h-7 text-xs ${
                                 u.status === "active"
-                                  ? "text-destructive hover:bg-destructive/10"
-                                  : "text-emerald-600 hover:bg-emerald-50"
+                                    ? "text-destructive hover:bg-destructive/10"
+                                    : "text-emerald-600 hover:bg-emerald-50"
                               }`}
-                              title={u.status === "active" ? "Disable user" : "Enable user"}
+                              title={u.status === "active" ? t.usersAdmin.suspendAccount : t.usersAdmin.activateAccount}
                             >
                               {u.status === "active" ? (
                                 <Ban className="h-3.5 w-3.5" />
@@ -324,11 +326,11 @@ export function UsersView({ users, roles, currentUser }: UsersViewProps) {
       <Dialog open={createOpen} onOpenChange={setCreateOpen}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Add New User Account</DialogTitle>
+            <DialogTitle>{t.usersAdmin.createAccount}</DialogTitle>
           </DialogHeader>
           <form onSubmit={handleCreate} className="space-y-4">
             <div className="space-y-1.5">
-              <Label htmlFor="uName">Full Name *</Label>
+              <Label htmlFor="uName">{t.usersAdmin.fullName} *</Label>
               <Input
                 id="uName"
                 placeholder="e.g. Alex Smith"
@@ -340,7 +342,7 @@ export function UsersView({ users, roles, currentUser }: UsersViewProps) {
             </div>
 
             <div className="space-y-1.5">
-              <Label htmlFor="uEmail">Email Address *</Label>
+              <Label htmlFor="uEmail">{t.usersAdmin.emailAddress} *</Label>
               <Input
                 id="uEmail"
                 type="email"
@@ -352,7 +354,7 @@ export function UsersView({ users, roles, currentUser }: UsersViewProps) {
             </div>
 
             <div className="space-y-1.5">
-              <Label>Assigned Role *</Label>
+              <Label>{t.usersAdmin.role} *</Label>
               <select
                 value={roleId}
                 onChange={(e) => setRoleId(e.target.value)}
@@ -384,7 +386,7 @@ export function UsersView({ users, roles, currentUser }: UsersViewProps) {
 
               {!isInvite && (
                 <div className="space-y-1.5">
-                  <Label htmlFor="tPass">Temporary Password</Label>
+                  <Label htmlFor="tPass">{t.usersAdmin.tempPassword}</Label>
                   <Input
                     id="tPass"
                     placeholder="Min 8 characters"
@@ -405,11 +407,11 @@ export function UsersView({ users, roles, currentUser }: UsersViewProps) {
                 onClick={() => setCreateOpen(false)}
                 disabled={isCreating}
               >
-                Cancel
+                {t.common.cancel}
               </Button>
               <Button type="submit" disabled={isCreating}>
                 {isCreating && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-                Create User
+                {t.common.create}
               </Button>
             </DialogFooter>
           </form>
@@ -420,11 +422,11 @@ export function UsersView({ users, roles, currentUser }: UsersViewProps) {
       <Dialog open={editOpen} onOpenChange={setEditOpen}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Edit User Profile</DialogTitle>
+            <DialogTitle>{t.usersAdmin.editAccount}</DialogTitle>
           </DialogHeader>
           <form onSubmit={handleUpdate} className="space-y-4">
             <div className="space-y-1.5">
-              <Label htmlFor="edName">Full Name *</Label>
+              <Label htmlFor="edName">{t.usersAdmin.fullName} *</Label>
               <Input
                 id="edName"
                 value={editName}
@@ -434,7 +436,7 @@ export function UsersView({ users, roles, currentUser }: UsersViewProps) {
             </div>
 
             <div className="space-y-1.5">
-              <Label>Assigned Role</Label>
+              <Label>{t.usersAdmin.role}</Label>
               <select
                 value={editRoleId}
                 disabled={editingUser?.id === currentUser.id}
@@ -463,11 +465,11 @@ export function UsersView({ users, roles, currentUser }: UsersViewProps) {
                 onClick={() => setEditOpen(false)}
                 disabled={isUpdating}
               >
-                Cancel
+                {t.common.cancel}
               </Button>
               <Button type="submit" disabled={isUpdating}>
                 {isUpdating && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-                Save Changes
+                {t.common.save}
               </Button>
             </DialogFooter>
           </form>
@@ -499,7 +501,7 @@ export function UsersView({ users, roles, currentUser }: UsersViewProps) {
           </div>
           <DialogFooter>
             <Button size="sm" onClick={() => setResultDialog(null)}>
-              Done
+              {t.common.close}
             </Button>
           </DialogFooter>
         </DialogContent>

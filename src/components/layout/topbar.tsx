@@ -52,15 +52,27 @@ export function Topbar({ user, companyName }: TopbarProps) {
     setMounted(true);
   }, []);
 
+  // Prevent background scrolling when mobile menu drawer is open
+  React.useEffect(() => {
+    if (mobileMenuOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [mobileMenuOpen]);
+
   return (
     <>
-      <header className="h-16 border-b bg-card/80 backdrop-blur sticky top-0 z-20 flex items-center justify-between px-4 sm:px-6">
+      <header className="h-16 border-b bg-card/80 backdrop-blur sticky top-0 z-20 flex items-center justify-between px-3 sm:px-6 w-full max-w-full overflow-hidden">
         {/* Left side: Mobile menu toggle & title / search */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3 min-w-0 shrink-0">
           {/* Mobile menu trigger */}
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="md:hidden p-2 rounded-md hover:bg-muted text-muted-foreground"
+            className="md:hidden p-2 rounded-md hover:bg-muted text-muted-foreground shrink-0"
             aria-label="Toggle menu"
           >
             <Menu className="h-5 w-5" />
@@ -71,7 +83,7 @@ export function Topbar({ user, companyName }: TopbarProps) {
         </div>
 
         {/* Right side: Sync Status, Language switcher, Theme toggle, and User dropdown */}
-        <div className="flex items-center gap-1.5 sm:gap-2.5">
+        <div className="flex items-center gap-1 sm:gap-2 shrink-0">
           <SyncStatusBadge />
           <LanguageSwitcher />
           <ThemeToggle />
@@ -141,7 +153,7 @@ export function Topbar({ user, companyName }: TopbarProps) {
 
             {/* Drawer Panel */}
             <div
-              className="fixed inset-y-0 left-0 z-[1000] w-72 max-w-[85vw] bg-card border-r shadow-2xl flex flex-col p-4 overflow-y-auto"
+              className="fixed inset-y-0 left-0 z-[1000] w-72 max-w-[85vw] bg-card border-r shadow-2xl flex flex-col p-4 overflow-y-auto overscroll-contain"
               onClick={(e) => e.stopPropagation()}
             >
               <div className="flex items-center justify-between border-b pb-3 mb-2">

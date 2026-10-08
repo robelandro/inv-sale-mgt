@@ -6,11 +6,14 @@ import { Button } from "@/components/ui/button";
 import { Wifi, WifiOff, RefreshCw, CheckCircle2, CloudUpload } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
+import { useTranslation } from "@/lib/i18n/context";
+
 export function SyncStatusBadge() {
   const isOnline = useSyncStore((s) => s.isOnline);
   const pendingCount = useSyncStore((s) => s.pendingCount);
   const isSyncing = useSyncStore((s) => s.isSyncing);
   const syncPendingSales = useSyncStore((s) => s.syncPendingSales);
+  const { t } = useTranslation();
 
   return (
     <TooltipProvider>
@@ -30,32 +33,32 @@ export function SyncStatusBadge() {
               {!isOnline ? (
                 <>
                   <WifiOff className="w-3.5 h-3.5" />
-                  <span className="hidden sm:inline">Offline (IndexedDB)</span>
+                  <span className="hidden sm:inline">{t.sync.offline}</span>
                 </>
               ) : isSyncing ? (
                 <>
                   <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                  <span className="hidden sm:inline">Syncing...</span>
+                  <span className="hidden sm:inline">{t.sync.syncing}</span>
                 </>
               ) : pendingCount > 0 ? (
                 <>
                   <CloudUpload className="w-3.5 h-3.5" />
-                  <span className="hidden sm:inline">{pendingCount} Pending Sync</span>
+                  <span className="hidden sm:inline">{pendingCount} {t.sync.pendingSync}</span>
                 </>
               ) : (
                 <>
                   <Wifi className="w-3.5 h-3.5" />
-                  <span className="hidden sm:inline">Online</span>
+                  <span className="hidden sm:inline">{t.sync.online}</span>
                 </>
               )}
             </div>
           </TooltipTrigger>
           <TooltipContent side="bottom" className="text-xs">
             {!isOnline
-              ? "Operating offline. Transactions are stored safely in local IndexedDB."
+              ? t.sync.offlineTooltip
               : pendingCount > 0
-              ? `${pendingCount} offline transaction(s) pending sync to server.`
-              : "System online. Real-time synchronization active."}
+              ? t.sync.pendingTooltip.replace("{{count}}", String(pendingCount))
+              : t.sync.onlineTooltip}
           </TooltipContent>
         </Tooltip>
 
@@ -69,7 +72,7 @@ export function SyncStatusBadge() {
             className="h-7 text-xs px-2 gap-1 border-blue-500/30 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/40"
           >
             <RefreshCw className={`w-3 h-3 ${isSyncing ? "animate-spin" : ""}`} />
-            Sync Now ({pendingCount})
+            {t.sync.syncNow} ({pendingCount})
           </Button>
         )}
       </div>

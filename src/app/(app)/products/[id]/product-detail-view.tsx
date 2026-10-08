@@ -23,6 +23,7 @@ import {
 import { formatCurrency, formatQuantity } from "@/lib/money";
 import { formatDate, getStatusBadgeVariant } from "@/lib/format";
 import { toast } from "sonner";
+import { useTranslation } from "@/lib/i18n/context";
 import {
   ArrowLeft,
   Package,
@@ -55,6 +56,7 @@ export function ProductDetailView({
   canAdjustStock: boolean;
 }) {
   const router = useRouter();
+  const { t } = useTranslation();
   const statusBadge = getStatusBadgeVariant(product.stockStatus);
 
   // Adjust stock state
@@ -177,7 +179,7 @@ export function ProductDetailView({
         <div className="flex items-center gap-3">
           <Link href="/products">
             <Button variant="outline" size="sm">
-              <ArrowLeft className="w-4 h-4 mr-1" /> Products
+              <ArrowLeft className="w-4 h-4 mr-1" /> {t.products?.title || "Products"}
             </Button>
           </Link>
           <div>
@@ -190,7 +192,7 @@ export function ProductDetailView({
               </span>
             </h1>
             <p className="text-xs text-muted-foreground font-mono">
-              SKU: {product.sku} {product.barcode && `• Barcode: ${product.barcode}`}
+              {t.products?.sku || "SKU"}: {product.sku} {product.barcode && `• ${t.products?.barcode || "Barcode"}: ${product.barcode}`}
             </p>
           </div>
         </div>
@@ -199,7 +201,7 @@ export function ProductDetailView({
           {canAdjustStock && (
             <Button size="sm" variant="outline" onClick={() => setAdjustOpen(true)}>
               <SlidersHorizontal className="w-4 h-4 mr-2" />
-              Adjust Stock
+              {t.stock?.adjustStock || "Adjust Stock"}
             </Button>
           )}
 
@@ -207,7 +209,7 @@ export function ProductDetailView({
             <>
               <Button size="sm" variant="secondary" onClick={() => setEditOpen(true)}>
                 <Edit className="w-4 h-4 mr-2" />
-                Edit
+                {t.common?.edit || "Edit"}
               </Button>
               <Button size="sm" variant="ghost" onClick={handleArchive} className="text-destructive hover:bg-destructive/10">
                 <Archive className="w-4 h-4" />
@@ -222,7 +224,7 @@ export function ProductDetailView({
         <Card className="rounded-card border shadow-sm">
           <CardHeader className="pb-2">
             <CardTitle className="text-xs font-semibold uppercase text-muted-foreground">
-              Current Stock
+              {t.products?.stockQty || "Current Stock"}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -233,7 +235,7 @@ export function ProductDetailView({
               </span>
             </div>
             <p className="text-xs text-muted-foreground mt-1">
-              Threshold: {product.lowStockThreshold ?? 5} units
+              {t.products?.lowStockThreshold || "Threshold"}: {product.lowStockThreshold ?? 5}
             </p>
           </CardContent>
         </Card>
@@ -241,7 +243,7 @@ export function ProductDetailView({
         <Card className="rounded-card border shadow-sm">
           <CardHeader className="pb-2">
             <CardTitle className="text-xs font-semibold uppercase text-muted-foreground">
-              Selling Price
+              {t.products?.sellingPrice || "Selling Price"}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -249,7 +251,7 @@ export function ProductDetailView({
               {formatCurrency(product.sellingPrice, currency)}
             </div>
             <p className="text-xs text-muted-foreground mt-1">
-              Active retail unit price
+              {t.reports?.retailDesc || "Active retail unit price"}
             </p>
           </CardContent>
         </Card>
@@ -258,7 +260,7 @@ export function ProductDetailView({
           <Card className="rounded-card border shadow-sm">
             <CardHeader className="pb-2">
               <CardTitle className="text-xs font-semibold uppercase text-muted-foreground">
-                Cost Price
+                {t.products?.costPrice || "Cost Price"}
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -266,7 +268,7 @@ export function ProductDetailView({
                 {formatCurrency(product.costPrice, currency)}
               </div>
               <p className="text-xs text-emerald-600 dark:text-emerald-400 font-medium mt-1">
-                Margin:{" "}
+                {t.reports?.margin || "Margin"}:{" "}
                 {Number(product.sellingPrice) > 0
                   ? (
                       ((Number(product.sellingPrice) - Number(product.costPrice)) /
@@ -283,7 +285,7 @@ export function ProductDetailView({
         <Card className="rounded-card border shadow-sm">
           <CardHeader className="pb-2">
             <CardTitle className="text-xs font-semibold uppercase text-muted-foreground">
-              Category & Unit
+              {t.products?.category || "Category"} & {t.products?.unit || "Unit"}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -291,7 +293,7 @@ export function ProductDetailView({
               {product.categoryName || "General"}
             </div>
             <p className="text-xs text-muted-foreground mt-1">
-              Unit: {product.unitName || "Pieces"} ({product.unitShortName || "pcs"})
+              {t.products?.unit || "Unit"}: {product.unitName || "Pieces"} ({product.unitShortName || "pcs"})
             </p>
           </CardContent>
         </Card>
@@ -300,7 +302,7 @@ export function ProductDetailView({
       {product.description && (
         <Card className="rounded-card border shadow-sm p-4 text-sm">
           <span className="font-semibold text-xs uppercase text-muted-foreground block mb-1">
-            Description / Specifications
+            {t.products.description}
           </span>
           <p className="text-muted-foreground">{product.description}</p>
         </Card>
@@ -312,10 +314,10 @@ export function ProductDetailView({
           <div>
             <CardTitle className="text-base font-semibold flex items-center gap-2">
               <History className="h-4 w-4 text-primary" />
-              Stock Movement Ledger
+              {t.stock?.movementHistory || "Stock Movement Ledger"}
             </CardTitle>
             <CardDescription className="text-xs">
-              Complete immutable ledger of all stock additions, sales, and manual adjustments
+              {t.stock?.subtitle || "Complete immutable ledger of all stock additions, sales, and manual adjustments"}
             </CardDescription>
           </div>
         </CardHeader>
@@ -324,18 +326,18 @@ export function ProductDetailView({
             <table className="w-full text-sm">
               <thead className="border-b text-xs uppercase text-muted-foreground font-medium bg-muted/30">
                 <tr>
-                  <th className="py-2.5 px-4 text-left font-medium">Type</th>
-                  <th className="py-2.5 px-4 text-right font-medium">Qty Change</th>
-                  <th className="py-2.5 px-4 text-right font-medium">Stock After</th>
-                  <th className="py-2.5 px-4 text-left font-medium">Reason / Note</th>
-                  <th className="py-2.5 px-4 text-right font-medium">Timestamp</th>
+                  <th className="py-2.5 px-4 text-left font-medium">{t.stock?.type || "Type"}</th>
+                  <th className="py-2.5 px-4 text-right font-medium">{t.stock?.qtyChange || "Qty Change"}</th>
+                  <th className="py-2.5 px-4 text-right font-medium">{t.stock?.qtyAfter || "Stock After"}</th>
+                  <th className="py-2.5 px-4 text-left font-medium">{t.stock?.reasonRef || "Reason / Note"}</th>
+                  <th className="py-2.5 px-4 text-right font-medium">{t.common?.date || "Timestamp"}</th>
                 </tr>
               </thead>
               <tbody className="divide-y">
                 {movements.length === 0 ? (
                   <tr>
                     <td colSpan={5} className="py-8 text-center text-muted-foreground text-xs">
-                      No stock movement history recorded for this product yet.
+                      {t.common?.noData || "No stock movement history recorded for this product yet."}
                     </td>
                   </tr>
                 ) : (
@@ -385,19 +387,19 @@ export function ProductDetailView({
       <Dialog open={adjustOpen} onOpenChange={setAdjustOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Adjust Stock for "{product.name}"</DialogTitle>
+            <DialogTitle>{t.stock?.adjustStock || "Adjust Stock"} — {product.name}</DialogTitle>
           </DialogHeader>
           <form onSubmit={handleAdjustStock} className="space-y-4">
             <div className="p-3 bg-muted/40 rounded-lg text-xs space-y-1">
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Current Stock:</span>
+                <span className="text-muted-foreground">{t.products?.stockQty || "Current Stock"}:</span>
                 <span className="font-semibold tabular-nums">{product.stockQty} {product.unitShortName}</span>
               </div>
             </div>
 
             <div className="space-y-1.5">
               <Label htmlFor="adjQty">
-                Quantity Change (+ to increase, - to decrease) *
+                {t.stock?.qtyChangeHelp || "Quantity Change (+ to increase, - to decrease)"} *
               </Label>
               <Input
                 id="adjQty"
@@ -413,11 +415,11 @@ export function ProductDetailView({
 
             <div className="space-y-1.5">
               <Label htmlFor="adjReason">
-                Reason (Mandatory) *
+                {t.stock?.reasonRequired || "Reason (Mandatory)"} *
               </Label>
               <Textarea
                 id="adjReason"
-                placeholder="e.g. Broken in warehouse during transit / Recount variance"
+                placeholder={t.stock?.reasonPlaceholder || "e.g. Broken in warehouse during transit / Recount variance"}
                 value={adjustReason}
                 onChange={(e) => setAdjustReason(e.target.value)}
                 required
@@ -431,11 +433,11 @@ export function ProductDetailView({
                 onClick={() => setAdjustOpen(false)}
                 disabled={isAdjusting}
               >
-                Cancel
+                {t.common?.cancel || "Cancel"}
               </Button>
               <Button type="submit" disabled={isAdjusting || !adjustQty || !adjustReason}>
                 {isAdjusting && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-                Confirm Adjustment
+                {t.stock?.confirmAdjustment || "Confirm Adjustment"}
               </Button>
             </DialogFooter>
           </form>
@@ -446,11 +448,11 @@ export function ProductDetailView({
       <Dialog open={editOpen} onOpenChange={setEditOpen}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
-            <DialogTitle>Edit Product Details</DialogTitle>
+            <DialogTitle>{t.products?.editProduct || "Edit Product Details"}</DialogTitle>
           </DialogHeader>
           <form onSubmit={handleEditProduct} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="editName">Product Name *</Label>
+              <Label htmlFor="editName">{t.products?.productName || "Product Name"} *</Label>
               <Input
                 id="editName"
                 value={name}
@@ -461,7 +463,7 @@ export function ProductDetailView({
 
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <Label htmlFor="editSku">SKU *</Label>
+                <Label htmlFor="editSku">{t.products?.sku || "SKU"} *</Label>
                 <Input
                   id="editSku"
                   value={sku}
@@ -470,7 +472,7 @@ export function ProductDetailView({
                 />
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="editBar">Barcode</Label>
+                <Label htmlFor="editBar">{t.products?.barcode || "Barcode"}</Label>
                 <Input
                   id="editBar"
                   value={barcode}
@@ -481,13 +483,13 @@ export function ProductDetailView({
 
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <Label>Category</Label>
+                <Label>{t.products?.category || "Category"}</Label>
                 <select
                   value={categoryId}
                   onChange={(e) => setCategoryId(e.target.value)}
                   className="w-full h-9 rounded-md border border-input bg-background px-3 py-1 text-sm"
                 >
-                  <option value="">Select Category...</option>
+                  <option value="">{t.products?.selectCategory || "Select Category..."}</option>
                   {categories.map((c) => (
                     <option key={c.id} value={c.id}>
                       {c.name}
@@ -497,13 +499,13 @@ export function ProductDetailView({
               </div>
 
               <div className="space-y-1.5">
-                <Label>Unit</Label>
+                <Label>{t.products?.unit || "Unit"}</Label>
                 <select
                   value={unitId}
                   onChange={(e) => setUnitId(e.target.value)}
                   className="w-full h-9 rounded-md border border-input bg-background px-3 py-1 text-sm"
                 >
-                  <option value="">Select Unit...</option>
+                  <option value="">{t.common?.optional || "Select Unit..."}</option>
                   {units.map((u) => (
                     <option key={u.id} value={u.id}>
                       {u.name} ({u.shortName})
@@ -515,7 +517,7 @@ export function ProductDetailView({
 
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <Label>Cost Price ({currency})</Label>
+                <Label>{t.products?.costPrice || "Cost Price"} ({currency})</Label>
                 <Input
                   type="number"
                   step="0.01"
@@ -525,7 +527,7 @@ export function ProductDetailView({
                 />
               </div>
               <div className="space-y-1.5">
-                <Label>Selling Price ({currency}) *</Label>
+                <Label>{t.products?.sellingPrice || "Selling Price"} ({currency}) *</Label>
                 <Input
                   type="number"
                   step="0.01"
@@ -538,7 +540,7 @@ export function ProductDetailView({
             </div>
 
             <div className="space-y-1.5">
-              <Label>Low Stock Threshold</Label>
+              <Label>{t.products?.lowStockThreshold || "Low Stock Threshold"}</Label>
               <Input
                 type="number"
                 min={0}
@@ -548,7 +550,7 @@ export function ProductDetailView({
             </div>
 
             <div className="space-y-1.5">
-              <Label>Description</Label>
+              <Label>{t.products?.description || "Description"}</Label>
               <Textarea
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
@@ -563,11 +565,11 @@ export function ProductDetailView({
                 onClick={() => setEditOpen(false)}
                 disabled={isEditing}
               >
-                Cancel
+                {t.common?.cancel || "Cancel"}
               </Button>
               <Button type="submit" disabled={isEditing}>
                 {isEditing && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-                Save Changes
+                {t.common?.save || "Save Changes"}
               </Button>
             </DialogFooter>
           </form>
